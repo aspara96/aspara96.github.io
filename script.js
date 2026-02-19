@@ -52,7 +52,7 @@ map.on('click', function(e) {
 });
 
 // ============================
-// 検索機能（GitHub公開対応）
+// 検索機能（確認後に登録）
 // ============================
 
 const searchBtn = document.getElementById("searchBtn");
@@ -97,15 +97,17 @@ async function searchPlace() {
             name: p.display_name
         };
 
-        // 地図移動のみ（まだ保存しない）
+        // 地図移動（まだ保存しない）
         map.setView([place.lat, place.lng], 16);
 
-        // 仮マーカー表示（未登録）
+        // 仮マーカー表示
         const previewMarker = L.marker([place.lat, place.lng])
             .addTo(map)
             .bindPopup(
-                `<b>${escapeHtml(place.name)}</b><br>
-                 登録しますか？`
+                `<div>
+                    <b>${escapeHtml(place.name)}</b><br>
+                    登録しますか？
+                </div>`
             )
             .openPopup();
 

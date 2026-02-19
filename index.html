@@ -2,27 +2,34 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>行きたい場所マップ</title>
 
 <link rel="stylesheet" href="style.css">
 
 <link rel="stylesheet"
  href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 
 <body>
 
-<header>
-<h2>行きたい場所マップ</h2>
-<p>地図をタップして登録</p>
+<header class="app-header">
+  <div class="title">📍 行きたい場所マップ</div>
+
+  <div class="search-area">
+    <input id="searchBox" placeholder="建物名・住所で検索">
+    <button id="searchBtn">検索</button>
+  </div>
 </header>
 
 <div id="map"></div>
 
-<script src="script.js"></script>
+<div class="bottom-bar">
+  <button id="locBtn">現在地</button>
+  <button id="clearBtn">全削除</button>
+</div>
 
+<script src="script.js"></script>
 </body>
 </html>

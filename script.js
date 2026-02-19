@@ -97,10 +97,31 @@ async function searchPlace() {
             name: p.display_name
         };
 
+        // 地図移動のみ（まだ保存しない）
         map.setView([place.lat, place.lng], 16);
-        places.push(place);
-        savePlaces();
-        createMarker(place);
+
+        // 仮マーカー表示（未登録）
+        const previewMarker = L.marker([place.lat, place.lng])
+            .addTo(map)
+            .bindPopup(
+                `<b>${escapeHtml(place.name)}</b><br>
+                 登録しますか？`
+            )
+            .openPopup();
+
+        // 登録確認
+        setTimeout(() => {
+            const ok = confirm("この場所を登録しますか？");
+
+            map.removeLayer(previewMarker);
+
+            if (!ok) return;
+
+            places.push(place);
+            savePlaces();
+            createMarker(place);
+
+        }, 300);
 
     } catch (e) {
         alert("検索でエラーが発生しました。時間をおいて再試行してください。");

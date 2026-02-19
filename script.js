@@ -85,7 +85,7 @@ async function searchPlace() {
         const data = await res.json();
 
         if (!Array.isArray(data) || data.length === 0) {
-            alert("見つかりませんでした（表記を変えて再検索してみてください）");
+            alert("見つかりませんでした");
             return;
         }
 
@@ -151,7 +151,7 @@ if (clearBtn) {
 }
 
 // ============================
-// 一覧ページへ移動（ボタンがある場合）
+// 一覧ページへ移動
 // ============================
 
 const listBtn = document.getElementById("listBtn");
@@ -162,13 +162,38 @@ if (listBtn) {
 }
 
 // ============================
-// マーカー生成
+// マーカー生成（長押し削除対応）
 // ============================
 
 function createMarker(data) {
-    const marker = L.marker([data.lat, data.lng])
-        .addTo(map)
-        .bindPopup(data.name);
+    const marker = L.marker([data.lat, data.lng]).addTo(map);
+
+    marker.bindPopup(
+        `<div>
+            ${escapeHtml(data.name)}<br>
+            <small>長押しで削除</small>
+        </div>`
+    );
+
+    let pressTimer = null;
+
+    marker.on("mousedown touchstart", function() {
+        pressTimer = setTimeout(() => {
+            if (!confirm("このピンを削除しますか？")) return;
+
+            map.removeLayer(marker);
+
+            places = places.filter(p =>
+                !(p.lat === data.lat && p.lng === data.lng && p.name === data.name)
+            );
+
+            savePlaces();
+        }, 700);
+    });
+
+    marker.on("mouseup mouseleave touchend", function() {
+        clearTimeout(pressTimer);
+    });
 
     markers.push(marker);
 }
@@ -179,4 +204,18 @@ function createMarker(data) {
 
 function savePlaces() {
     localStorage.setItem("places", JSON.stringify(places));
+}
+
+// ============================
+// HTMLエスケープ
+// ============================
+
+function escapeHtml(text) {
+    return text.replace(/[&<>"']/g, m => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#039;"
+    }[m]));
 }

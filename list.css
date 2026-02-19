@@ -1,0 +1,52 @@
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f2f2f7;
+}
+
+.header {
+    background: white;
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+#list {
+    padding: 10px;
+}
+
+.card {
+    background: white;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.name {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.buttons {
+    display: flex;
+    gap: 8px;
+}
+
+button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.view { background: #007aff; color: white; }
+.delete { background: #ff3b30; color: white; }

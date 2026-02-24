@@ -1,66 +1,114 @@
+/* =========================
+   全体レイアウト
+========================= */
+
 html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-.app-header {
-    background: #ffffff;
-    border-bottom: 1px solid #ddd;
-    padding: 10px;
-}
-
-.title {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 6px;
-}
-
-.search-area {
-    display: flex;
-    gap: 6px;
-}
-
-.search-area input {
-    flex: 1;
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-}
-
-.search-area button {
-    padding: 10px 14px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: none;
-    background: #007aff;
-    color: white;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: sans-serif;
 }
 
 #map {
-    height: calc(100% - 140px);
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
 }
 
+/* =========================
+   上部検索バー
+========================= */
+
+.top-bar {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  gap: 8px;
+  z-index: 1000;
+}
+
+.top-bar input {
+  flex: 1;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+.top-bar button {
+  padding: 12px 16px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: none;
+  background: #333;
+  color: white;
+}
+
+/* =========================
+   下部ボタン
+========================= */
+
 .bottom-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    gap: 10px;
-    padding: 10px;
-    background: white;
-    border-top: 1px solid #ddd;
+  position: fixed;
+  left: 10px;
+  right: 10px;
+  bottom: 20px;
+  display: flex;
+  gap: 8px;
+  z-index: 1000;
 }
 
 .bottom-bar button {
-    flex: 1;
-    padding: 14px;
-    font-size: 16px;
-    border-radius: 10px;
-    border: none;
-    background: #333;
-    color: white;
+  flex: 1;
+  padding: 14px;
+  font-size: 16px;
+  border-radius: 12px;
+  border: none;
+  background: #333;
+  color: white;
+}
+
+/* =========================
+   検索結果パネル
+========================= */
+
+.result-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 60%;
+  background: white;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.2);
+  overflow: auto;
+  padding: 10px;
+  z-index: 1100;
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.result-item {
+  padding: 14px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.result-item:active {
+  background: #f0f0f0;
+}
+
+.hidden {
+  display: none;
 }

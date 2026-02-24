@@ -2,30 +2,22 @@
 // 初期設定
 // ============================
 
-// 地図初期化（日本中心）
-const map = L.map('map', {
-    zoomControl: false
-}).setView([36.2048, 138.2529], 5);
+const map = L.map('map', { zoomControl: false })
+  .setView([36.2048, 138.2529], 5);
 
-// 地図レイヤー
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: 'OpenStreetMap'
 }).addTo(map);
 
-// 保存データ
 let places = JSON.parse(localStorage.getItem("places") || "[]");
-
-// マーカー管理
 let markers = [];
 
 // ============================
 // 起動時表示
 // ============================
 
-// 保存済みマーカー表示
 places.forEach(createMarker);
 
-// 一覧ページから戻ってきたときのフォーカス表示
 const focus = JSON.parse(localStorage.getItem("focusPlace") || "null");
 if (focus) {
     map.setView([focus.lat, focus.lng], 16);
@@ -33,7 +25,7 @@ if (focus) {
 }
 
 // ============================
-// 地図タップで登録
+// 地図タップ登録
 // ============================
 
 map.on('click', function(e) {
@@ -52,13 +44,23 @@ map.on('click', function(e) {
 });
 
 // ============================
-// 検索機能（確認後に登録）
+// 検索UI
 // ============================
 
 const searchBtn = document.getElementById("searchBtn");
-if (searchBtn) {
-    searchBtn.addEventListener("click", searchPlace);
+if (searchBtn) searchBtn.addEventListener("click", searchPlace);
+
+const resultPanel = document.getElementById("resultPanel");
+const resultList = document.getElementById("resultList");
+const closeResult = document.getElementById("closeResult");
+
+if (closeResult) {
+    closeResult.onclick = () => resultPanel.classList.add("hidden");
 }
+
+// ============================
+// 検索（複数候補表示）
+// ============================
 
 async function searchPlace() {
     const box = document.getElementById("searchBox");
@@ -70,90 +72,90 @@ async function searchPlace() {
     try {
         const url =
           "https://nominatim.openstreetmap.org/search" +
-          "?format=jsonv2&limit=1&countrycodes=jp&accept-language=ja" +
+          "?format=jsonv2&limit=5&countrycodes=jp&accept-language=ja" +
           "&q=" + encodeURIComponent(keyword);
 
-        const res = await fetch(url, {
-            method: "GET",
-            headers: { "Accept": "application/json" }
-        });
-
-        if (!res.ok) {
-            throw new Error("HTTP " + res.status);
-        }
-
+        const res = await fetch(url);
         const data = await res.json();
 
-        if (!Array.isArray(data) || data.length === 0) {
+        if (!data || data.length === 0) {
             alert("見つかりませんでした");
             return;
         }
 
-        const p = data[0];
-
-        const place = {
-            lat: parseFloat(p.lat),
-            lng: parseFloat(p.lon),
-            name: p.display_name
-        };
-
-        // 地図移動（まだ保存しない）
-        map.setView([place.lat, place.lng], 16);
-
-        // 仮マーカー表示
-        const previewMarker = L.marker([place.lat, place.lng])
-            .addTo(map)
-            .bindPopup(
-                `<div>
-                    <b>${escapeHtml(place.name)}</b><br>
-                    登録しますか？
-                </div>`
-            )
-            .openPopup();
-
-        // 登録確認
-        setTimeout(() => {
-            const ok = confirm("この場所を登録しますか？");
-
-            map.removeLayer(previewMarker);
-
-            if (!ok) return;
-
-            places.push(place);
-            savePlaces();
-            createMarker(place);
-
-        }, 300);
+        showResults(data);
 
     } catch (e) {
-        alert("検索でエラーが発生しました。時間をおいて再試行してください。");
+        alert("検索エラー");
         console.error(e);
     }
 }
 
 // ============================
-// 現在地表示
+// 候補表示
+// ============================
+
+function showResults(list) {
+    resultList.innerHTML = "";
+
+    list.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "result-item";
+        div.textContent = item.display_name;
+
+        div.onclick = () => selectPlace(item);
+
+        resultList.appendChild(div);
+    });
+
+    resultPanel.classList.remove("hidden");
+}
+
+// ============================
+// 候補選択 → 地図表示 → 登録確認
+// ============================
+
+function selectPlace(item) {
+    resultPanel.classList.add("hidden");
+
+    const place = {
+        lat: parseFloat(item.lat),
+        lng: parseFloat(item.lon),
+        name: item.display_name
+    };
+
+    map.setView([place.lat, place.lng], 16);
+
+    const previewMarker = L.marker([place.lat, place.lng])
+        .addTo(map)
+        .bindPopup(`<b>${escapeHtml(place.name)}</b>`)
+        .openPopup();
+
+    setTimeout(() => {
+        const ok = confirm("この場所を登録しますか？");
+
+        map.removeLayer(previewMarker);
+
+        if (!ok) return;
+
+        places.push(place);
+        savePlaces();
+        createMarker(place);
+
+    }, 300);
+}
+
+// ============================
+// 現在地
 // ============================
 
 const locBtn = document.getElementById("locBtn");
 if (locBtn) {
-    locBtn.addEventListener("click", () => {
-        if (!navigator.geolocation) {
-            alert("位置情報が使えません");
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            pos => {
-                const lat = pos.coords.latitude;
-                const lng = pos.coords.longitude;
-                map.setView([lat, lng], 15);
-            },
-            () => {
-                alert("位置情報を取得できませんでした");
-            }
-        );
-    });
+    locBtn.onclick = () => {
+        navigator.geolocation.getCurrentPosition(pos => {
+            map.setView([pos.coords.latitude, pos.coords.longitude], 15);
+        });
+    };
 }
 
 // ============================
@@ -162,7 +164,7 @@ if (locBtn) {
 
 const clearBtn = document.getElementById("clearBtn");
 if (clearBtn) {
-    clearBtn.addEventListener("click", () => {
+    clearBtn.onclick = () => {
         if (!confirm("すべて削除しますか？")) return;
 
         localStorage.removeItem("places");
@@ -170,39 +172,30 @@ if (clearBtn) {
 
         markers.forEach(m => map.removeLayer(m));
         markers = [];
-    });
+    };
 }
 
 // ============================
-// 一覧ページへ移動
+// 一覧へ
 // ============================
 
 const listBtn = document.getElementById("listBtn");
-if (listBtn) {
-    listBtn.addEventListener("click", () => {
-        location.href = "list.html";
-    });
-}
+if (listBtn) listBtn.onclick = () => location.href = "list.html";
 
 // ============================
-// マーカー生成（長押し削除対応）
+// マーカー生成（長押し削除）
 // ============================
 
 function createMarker(data) {
     const marker = L.marker([data.lat, data.lng]).addTo(map);
 
-    marker.bindPopup(
-        `<div>
-            ${escapeHtml(data.name)}<br>
-            <small>長押しで削除</small>
-        </div>`
-    );
+    marker.bindPopup(`${escapeHtml(data.name)}<br><small>長押しで削除</small>`);
 
-    let pressTimer = null;
+    let timer = null;
 
-    marker.on("mousedown touchstart", function() {
-        pressTimer = setTimeout(() => {
-            if (!confirm("このピンを削除しますか？")) return;
+    marker.on("mousedown touchstart", () => {
+        timer = setTimeout(() => {
+            if (!confirm("削除しますか？")) return;
 
             map.removeLayer(marker);
 
@@ -214,15 +207,13 @@ function createMarker(data) {
         }, 700);
     });
 
-    marker.on("mouseup mouseleave touchend", function() {
-        clearTimeout(pressTimer);
-    });
+    marker.on("mouseup mouseleave touchend", () => clearTimeout(timer));
 
     markers.push(marker);
 }
 
 // ============================
-// 保存処理
+// 保存
 // ============================
 
 function savePlaces() {

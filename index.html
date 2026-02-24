@@ -1,36 +1,49 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>行きたい場所マップ</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>行きたい場所マップ</title>
 
-<link rel="stylesheet" href="style.css">
+  <!-- Leaflet -->
+  <link rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-<link rel="stylesheet"
- href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<header class="app-header">
-  <div class="title">📍 行きたい場所マップ</div>
+  <!-- 地図 -->
+  <div id="map"></div>
 
-  <div class="search-area">
-    <input id="searchBox" placeholder="建物名・住所で検索">
+  <!-- 上部検索バー -->
+  <div class="top-bar">
+    <input id="searchBox" type="text" placeholder="場所名を検索">
     <button id="searchBtn">検索</button>
   </div>
-</header>
 
-<div id="map"></div>
+  <!-- 下部ボタン -->
+  <div class="bottom-bar">
+    <button id="listBtn">一覧</button>
+    <button id="locBtn">現在地</button>
+    <button id="clearBtn">全削除</button>
+  </div>
 
-<div class="bottom-bar">
-  <button id="listBtn">一覧</button>
-  <button id="locBtn">現在地</button>
-  <button id="clearBtn">全削除</button>
-</div>
+  <!-- 検索結果パネル -->
+  <div id="resultPanel" class="result-panel hidden">
+    <div class="result-header">
+      <span>検索結果</span>
+      <button id="closeResult">閉じる</button>
+    </div>
+    <div id="resultList"></div>
+  </div>
 
-<script src="script.js"></script>
+  <!-- Leaflet -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- アプリ本体 -->
+  <script src="script.js"></script>
+
 </body>
 </html>

@@ -5,32 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>行きたい場所マップ</title>
 
-  <!-- Leaflet -->
-  <link rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <!-- 地図 -->
   <div id="map"></div>
 
-  <!-- 上部検索バー -->
+  <!-- 検索 -->
   <div class="top-bar">
     <input id="searchBox" type="text" placeholder="場所名を検索">
     <button id="searchBtn">検索</button>
   </div>
 
-  <!-- 下部ボタン -->
+  <!-- 下部 -->
   <div class="bottom-bar">
     <button id="listBtn">一覧</button>
     <button id="locBtn">現在地</button>
     <button id="clearBtn">全削除</button>
   </div>
 
-  <!-- 検索結果パネル -->
+  <!-- 検索結果 -->
   <div id="resultPanel" class="result-panel hidden">
     <div class="result-header">
       <span>検索結果</span>
@@ -39,10 +35,33 @@
     <div id="resultList"></div>
   </div>
 
-  <!-- Leaflet -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- 登録モーダル -->
+  <div id="registerModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>登録</h3>
 
-  <!-- アプリ本体 -->
+      <input id="customName" placeholder="登録名称">
+
+      <label>期間</label>
+      <input type="date" id="startDate">
+      <input type="date" id="endDate">
+
+      <label>カテゴリ</label>
+      <select id="category">
+        <option value="食事">食事</option>
+        <option value="その他">その他</option>
+      </select>
+
+      <textarea id="memo" placeholder="メモ"></textarea>
+
+      <div class="modal-buttons">
+        <button id="savePlaceBtn">登録</button>
+        <button id="cancelPlaceBtn">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="script.js"></script>
 
 </body>

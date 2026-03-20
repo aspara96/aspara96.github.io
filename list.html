@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -16,6 +17,28 @@
   <main id="spot-list"></main>
 
   <script src="js/storage.js"></script>
+
   <script src="js/list.js"></script>
+
+  <script>
+    // デバッグ用：画面に状態を表示
+    window.addEventListener('DOMContentLoaded', () => {
+      const debugEl = document.createElement('div');
+      debugEl.style = 'padding:16px;font-size:14px;background:#fff;';
+
+      const storageLoaded = typeof SpotStorage !== 'undefined';
+      const rawData = localStorage.getItem('wantToGoSpots');
+      const spots = storageLoaded ? SpotStorage.getAll() : [];
+
+      debugEl.innerHTML = `
+        <b>デバッグ情報</b><br>
+        storage.js 読み込み: ${storageLoaded ? '✅' : '❌'}<br>
+        LocalStorage生データ: ${rawData ?? '(なし)'}<br>
+        スポット件数: ${spots.length}
+      `;
+      document.body.appendChild(debugEl);
+    });
+  </script>
+
 </body>
 </html>

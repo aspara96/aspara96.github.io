@@ -1,0 +1,200 @@
+/* ===========================
+   styles/map.css
+   地図メイン画面のスタイル
+   =========================== */
+
+/* --- リセット & ベース --- */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+}
+
+/* --- 地図 --- */
+#map {
+  position: absolute;
+  inset: 0;
+}
+
+/* --- 検索バー（上部） --- */
+.search-bar {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 1000;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  outline: none;
+}
+
+.search-bar button {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 10px;
+  background: #333;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* --- 操作ボタンバー（下部） --- */
+.action-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 1000;
+}
+
+.action-bar button {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: #333;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.action-bar button:active {
+  opacity: 0.75;
+}
+
+/* --- 検索結果シート --- */
+.results-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 60%;
+  background: white;
+  border-radius: 16px 16px 0 0;
+  padding: 12px;
+  z-index: 1100;
+  overflow-y: auto;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.results-sheet__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.results-sheet__header button {
+  border: none;
+  background: none;
+  color: #007aff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.result-item {
+  padding: 12px 4px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.result-item:hover {
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+/* --- モーダル --- */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal__content {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  width: 90%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal__title {
+  margin: 0 0 4px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.modal__content input,
+.modal__content select,
+.modal__content textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.modal__content textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+.modal__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btn-cancel,
+.btn-save {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.btn-save {
+  background: #007aff;
+  color: white;
+}
+
+/* --- ユーティリティ --- */
+.hidden {
+  display: none !important;
+}

@@ -185,9 +185,6 @@ lng: pendingLatLng.lng,
 SpotStorage.add(spot);
 addMarkerForSpot(spot);
 closeRegisterModal();
-
-// デバッグ用：登録後にLocalStorageの内容を確認
-alert(’保存済みスポット数: ’ + SpotStorage.getAll().length);
 }
 
 /* ===========================

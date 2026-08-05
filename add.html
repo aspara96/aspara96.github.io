@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1d2b3a">
+<title>場所を追加 | 行きたい場所マップ</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+
+    <header class="app-header add-header">
+      <a href="index.html" class="back-btn" aria-label="一覧に戻る">&#8592;</a>
+      <h1>場所を追加</h1>
+    </header>
+
+    <main class="main-content add-content">
+      <div id="map" class="map map-small"></div>
+      <p class="hint">検索結果を選ぶか、地図を直接タップして場所を指定できます</p>
+      <div class="coords-display">選択中の座標: <span id="coordsText">未選択</span></div>
+
+      <form id="placeForm" class="add-form">
+        <label for="searchQuery">住所・地名で検索
+          <div class="search-row">
+            <input type="text" id="searchQuery" placeholder="例: 京都駅">
+            <button type="button" id="searchBtn">検索</button>
+          </div>
+        </label>
+        <ul id="searchResults" class="search-results"></ul>
+
+        <label for="placeName">場所の名前
+          <input type="text" id="placeName" required placeholder="例: 京都 清水寺">
+        </label>
+
+        <label for="placeUrl">参考URL（任意）
+          <input type="url" id="placeUrl" placeholder="https://...">
+        </label>
+
+        <div class="date-range">
+          <label for="startDate">開始日
+            <input type="date" id="startDate" required>
+          </label>
+          <label for="endDate">終了日
+            <input type="date" id="endDate" required>
+          </label>
+        </div>
+
+        <label for="placeMemo">メモ（任意）
+          <textarea id="placeMemo" rows="3" placeholder="行きたい理由など"></textarea>
+        </label>
+
+        <button type="submit" id="saveBtn" disabled>この場所を保存</button>
+      </form>
+    </main>
+  </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="common.js"></script>
+<script src="add.js"></script>
+</body>
+</html>

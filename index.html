@@ -2,7 +2,8 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1d2b3a">
 <title>行きたい場所マップ</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,69 +18,33 @@
 
     <header class="app-header">
       <h1><span class="header-icon" aria-hidden="true">&#9992;</span>行きたい場所マップ</h1>
-      <div class="date-control">
-        <label for="viewDate">表示基準日</label>
-        <input type="date" id="viewDate">
-        <button id="todayBtn" type="button">今日</button>
-      </div>
     </header>
 
-    <div class="app-body">
-
-      <aside class="sidebar">
-        <section class="add-place">
-          <h2>場所を追加</h2>
-          <form id="placeForm">
-            <label for="placeName">場所の名前
-              <input type="text" id="placeName" required placeholder="例: 京都 清水寺">
-            </label>
-
-            <label for="searchQuery">住所・地名で検索
-              <div class="search-row">
-                <input type="text" id="searchQuery" placeholder="例: 京都駅">
-                <button type="button" id="searchBtn">検索</button>
-              </div>
-            </label>
-            <ul id="searchResults" class="search-results"></ul>
-
-            <p class="hint">検索結果を選ぶか、地図を直接クリックして場所を指定できます</p>
-            <div class="coords-display">
-              選択中の座標: <span id="coordsText">未選択</span>
-            </div>
-
-            <div class="date-range">
-              <label for="startDate">開始日
-                <input type="date" id="startDate" required>
-              </label>
-              <label for="endDate">終了日
-                <input type="date" id="endDate" required>
-              </label>
-            </div>
-
-            <label for="placeMemo">メモ（任意）
-              <textarea id="placeMemo" rows="2" placeholder="行きたい理由など"></textarea>
-            </label>
-
-            <button type="submit" id="saveBtn" disabled>この場所を保存</button>
-          </form>
-        </section>
-
-        <section class="place-list-section">
-          <h2>保存した場所 <span id="placeCount">(0)</span></h2>
-          <ul id="placeList" class="place-list"></ul>
-          <button type="button" id="clearAllBtn" class="clear-all-btn">保存データを全て削除</button>
-        </section>
-      </aside>
-
-      <main class="map-container">
-        <div id="map"></div>
-        <p class="map-note" id="mapNote"></p>
-      </main>
-
+    <div class="date-bar">
+      <label for="viewDate">表示基準日</label>
+      <input type="date" id="viewDate">
+      <button id="todayBtn" type="button">今日</button>
     </div>
+
+    <main class="main-content">
+      <div id="map" class="map"></div>
+      <p class="map-note" id="mapNote"></p>
+
+      <section class="place-list-section">
+        <div class="section-header">
+          <h2>保存した場所</h2>
+          <span id="placeCount">(0)</span>
+        </div>
+        <ul id="placeList" class="place-list"></ul>
+        <button type="button" id="clearAllBtn" class="clear-all-btn">保存データを全て削除</button>
+      </section>
+    </main>
+
+    <a href="add.html" class="fab" aria-label="場所を追加する">+</a>
   </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="script.js"></script>
+<script src="common.js"></script>
+<script src="index.js"></script>
 </body>
 </html>

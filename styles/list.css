@@ -1,0 +1,103 @@
+/* ===========================
+   styles/list.css
+   スポット一覧ページのスタイル
+   =========================== */
+
+/* --- ベース --- */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  background: #f2f2f7;
+}
+
+/* --- ヘッダー --- */
+.page-header {
+  background: white;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.page-header__title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.page-header button {
+  border: none;
+  background: none;
+  color: #007aff;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* --- スポットリスト --- */
+#spot-list {
+  padding: 12px;
+}
+
+/* --- スポットカード --- */
+.spot-card {
+  background: white;
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+}
+
+.spot-card__name {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.spot-card__meta {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 10px;
+}
+
+.spot-card__memo {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 10px;
+  white-space: pre-wrap;
+}
+
+.spot-card__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.spot-card__actions button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-view {
+  background: #007aff;
+  color: white;
+}
+
+.btn-delete {
+  background: #ff3b30;
+  color: white;
+}
+
+/* --- 空状態 --- */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #aaa;
+  font-size: 15px;
+}

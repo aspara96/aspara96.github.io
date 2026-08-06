@@ -1,7 +1,7 @@
 // list.js
 // 登録した場所の一覧画面（list.html）専用の処理です。地図・期間フィルターに関係なく、
 // 保存されている場所を常にすべて表示します。
-// common.js の関数（loadPlaces / savePlaces / formatDateShort）に依存しています。
+// common.js の関数（loadPlaces / savePlaces / renderPeriodStub など）に依存しています。
 
 (function () {
   'use strict';
@@ -57,6 +57,19 @@
     sorted.forEach(function (p) {
       var li = document.createElement('li');
       li.className = 'place-item';
+      li.tabIndex = 0;
+
+      // アイテム（行）自体をタップ/Enterで詳細画面へ
+      var goToDetail = function () {
+        window.location.href = 'detail.html?id=' + encodeURIComponent(p.id);
+      };
+      li.addEventListener('click', goToDetail);
+      li.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          goToDetail();
+        }
+      });
 
       // 左側: 場所の情報
       var stubMain = document.createElement('div');
@@ -81,6 +94,7 @@
         linkEl.target = '_blank';
         linkEl.rel = 'noopener noreferrer';
         linkEl.textContent = '🔗 参考リンク';
+        linkEl.addEventListener('click', function (e) { e.stopPropagation(); });
         stubMain.appendChild(linkEl);
       }
 
@@ -92,13 +106,15 @@
       viewBtn.className = 'focus-btn';
       viewBtn.href = 'index.html?focus=' + encodeURIComponent(p.id);
       viewBtn.textContent = '地図で見る';
+      viewBtn.addEventListener('click', function (e) { e.stopPropagation(); });
       actions.appendChild(viewBtn);
 
       var delBtn = document.createElement('button');
       delBtn.type = 'button';
       delBtn.className = 'delete-btn';
       delBtn.textContent = '削除';
-      delBtn.addEventListener('click', function () {
+      delBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
         if (confirm('「' + p.name + '」を削除しますか？')) {
           deletePlace(p.id);
         }
@@ -107,16 +123,13 @@
 
       stubMain.appendChild(actions);
 
-      // 右側: チケット風の日付スタブ
+      // 右側: チケット風の期間スタブ
       var stubSide = document.createElement('div');
       stubSide.className = 'stub-side';
 
       var dateEl = document.createElement('div');
       dateEl.className = 'stub-date';
-      dateEl.innerHTML =
-        formatDateShort(p.startDate) +
-        '<div class="to">〜</div>' +
-        formatDateShort(p.endDate);
+      renderPeriodStub(dateEl, p);
       stubSide.appendChild(dateEl);
 
       li.appendChild(stubMain);

@@ -1,5 +1,5 @@
 // common.js
-// index.html / add.html / list.html すべてから読み込む共通処理です。
+// index.html / add.html / list.html / detail.html すべてから読み込む共通処理です。
 // 保存データの読み書き、日付処理、地図ピンのアイコン生成、地名検索(Nominatim)などをまとめています。
 
 var STORAGE_KEY = 'ikitai_places_v1';
@@ -26,7 +26,7 @@ function savePlaces(places) {
   }
 }
 
-// ---------- 日付 ----------
+// ---------- 日付・期間 ----------
 
 function formatDate(d) {
   var y = d.getFullYear();
@@ -40,9 +40,33 @@ function formatDateShort(isoDate) {
   return parts[0] + '/' + parts[1] + '/' + parts[2];
 }
 
-// dateStr が place の期間内かどうか
+// place に期間が設定されているかどうか
+function hasPeriod(place) {
+  return !!(place.startDate && place.endDate);
+}
+
+// dateStr が place の期間内かどうか。期間が設定されていない場所は常に対象になる。
 function isActiveOn(place, dateStr) {
+  if (!hasPeriod(place)) return true;
   return place.startDate <= dateStr && dateStr <= place.endDate;
+}
+
+// 一覧・詳細で使う「期間」の表示用ラベル
+function formatPeriodLabel(place) {
+  if (!hasPeriod(place)) return '期限なし';
+  return formatDateShort(place.startDate) + ' 〜 ' + formatDateShort(place.endDate);
+}
+
+// チケット風スタブ(右側の日付表示)の中身を組み立てる
+function renderPeriodStub(el, place) {
+  if (hasPeriod(place)) {
+    el.innerHTML =
+      formatDateShort(place.startDate) +
+      '<div class="to">〜</div>' +
+      formatDateShort(place.endDate);
+  } else {
+    el.innerHTML = '<div class="no-period">期限<br>なし</div>';
+  }
 }
 
 // ---------- 地図ピン ----------

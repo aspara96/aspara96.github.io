@@ -1,8 +1,10 @@
 // common.js
-// 一覧画面(index.html)と追加画面(add.html)の両方から読み込む共通処理です。
-// 保存データの読み書きや日付処理、地図ピンのアイコン生成などをまとめています。
+// index.html / add.html / list.html すべてから読み込む共通処理です。
+// 保存データの読み書き、日付処理、地図ピンのアイコン生成、地名検索(Nominatim)などをまとめています。
 
 var STORAGE_KEY = 'ikitai_places_v1';
+
+// ---------- 保存データ ----------
 
 function loadPlaces() {
   try {
@@ -24,6 +26,8 @@ function savePlaces(places) {
   }
 }
 
+// ---------- 日付 ----------
+
 function formatDate(d) {
   var y = d.getFullYear();
   var m = String(d.getMonth() + 1).padStart(2, '0');
@@ -36,9 +40,12 @@ function formatDateShort(isoDate) {
   return parts[0] + '/' + parts[1] + '/' + parts[2];
 }
 
+// dateStr が place の期間内かどうか
 function isActiveOn(place, dateStr) {
   return place.startDate <= dateStr && dateStr <= place.endDate;
 }
+
+// ---------- 地図ピン ----------
 
 // 保存済みの場所用ピン（涙型・紺色×金縁）
 function createPlaceIcon() {
@@ -58,5 +65,53 @@ function createSelectionIcon() {
     html: '<div class="selection-marker-inner"></div>',
     iconSize: [16, 16],
     iconAnchor: [8, 8],
+  });
+}
+
+// ---------- 地名検索 (OpenStreetMap Nominatim) ----------
+
+function geocodeSearch(query) {
+  var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=5&accept-language=ja&q=' + encodeURIComponent(query);
+  return fetch(url).then(function (res) {
+    if (!res.ok) throw new Error('geocode request failed');
+    return res.json();
+  });
+}
+
+function showSearchLoading(resultsEl) {
+  resultsEl.innerHTML = '';
+  var li = document.createElement('li');
+  li.className = 'search-loading';
+  li.textContent = '検索中...';
+  resultsEl.appendChild(li);
+}
+
+function showSearchError(resultsEl, message) {
+  resultsEl.innerHTML = '';
+  var li = document.createElement('li');
+  li.className = 'search-error';
+  li.textContent = message;
+  resultsEl.appendChild(li);
+}
+
+// results: Nominatim の検索結果配列 / onSelect(result) はクリックされた項目を受け取るコールバック
+function renderSearchResultsList(resultsEl, results, onSelect) {
+  resultsEl.innerHTML = '';
+
+  if (!results || results.length === 0) {
+    var emptyLi = document.createElement('li');
+    emptyLi.className = 'search-empty';
+    emptyLi.textContent = '見つかりませんでした';
+    resultsEl.appendChild(emptyLi);
+    return;
+  }
+
+  results.forEach(function (r) {
+    var li = document.createElement('li');
+    li.textContent = r.display_name;
+    li.addEventListener('click', function () {
+      onSelect(r);
+    });
+    resultsEl.appendChild(li);
   });
 }

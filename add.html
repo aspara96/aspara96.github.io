@@ -44,13 +44,14 @@
         </label>
 
         <div class="date-range">
-          <label for="startDate">開始日
-            <input type="date" id="startDate" required>
+          <label for="startDate">開始日（任意）
+            <input type="date" id="startDate">
           </label>
-          <label for="endDate">終了日
-            <input type="date" id="endDate" required>
+          <label for="endDate">終了日（任意）
+            <input type="date" id="endDate">
           </label>
         </div>
+        <p class="hint">期間を指定しない場合は「期限なし」として、表示基準日に関わらず常に地図に表示されます。</p>
 
         <label for="placeMemo">メモ（任意）
           <textarea id="placeMemo" rows="3" placeholder="行きたい理由など"></textarea>

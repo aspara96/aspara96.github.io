@@ -18,21 +18,31 @@
 
     <header class="app-header">
       <h1><span class="header-icon" aria-hidden="true">&#9992;</span>行きたい場所マップ</h1>
+      <a href="list.html" class="header-link" aria-label="登録した場所の一覧を見る">&#128203;</a>
     </header>
 
     <div class="date-bar">
-      <label for="viewDate">表示基準日</label>
-      <input type="date" id="viewDate">
+      <span class="date-bar-icon" aria-hidden="true">&#128197;</span>
+      <input type="date" id="viewDate" aria-label="表示基準日">
       <button id="todayBtn" type="button">今日</button>
+      <button id="clearDateBtn" type="button">すべて</button>
     </div>
 
     <main class="main-content">
+      <div class="map-search">
+        <div class="search-row">
+          <input type="text" id="mapSearchQuery" placeholder="例: 東京タワー">
+          <button type="button" id="mapSearchBtn">検索</button>
+        </div>
+        <ul id="mapSearchResults" class="search-results"></ul>
+      </div>
+
       <div id="map" class="map"></div>
       <p class="map-note" id="mapNote"></p>
 
       <section class="place-list-section">
         <div class="section-header">
-          <h2>保存した場所</h2>
+          <h2>地図に表示中の場所</h2>
           <span id="placeCount">(0)</span>
         </div>
         <ul id="placeList" class="place-list"></ul>

@@ -1,5 +1,5 @@
 /* style.css
-   index.html（一覧画面）と add.html（追加画面）で共通して使うスタイルです。
+   index.html / add.html / list.html で共通して使うスタイルです。
    iPhoneでの表示を基準に調整しています。 */
 
 :root {
@@ -79,6 +79,22 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 }
 .header-icon { font-size: 18px; }
 
+.header-link {
+  margin-left: auto;
+  color: var(--color-gold);
+  text-decoration: none;
+  font-size: 19px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.header-link:active { background: rgba(192, 138, 46, 0.18); }
+
 .add-header { gap: 14px; }
 .back-btn {
   color: var(--color-gold);
@@ -106,7 +122,7 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   color: #e7e9ec;
   font-size: 13px;
 }
-.date-bar label { white-space: nowrap; }
+.date-bar-icon { font-size: 15px; flex-shrink: 0; }
 .date-bar input[type="date"] {
   flex: 1;
   min-width: 0;
@@ -118,7 +134,7 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   color-scheme: dark;
 }
 .date-bar button {
-  padding: 8px 14px;
+  padding: 8px 12px;
   border: none;
   background: var(--color-gold);
   color: var(--color-ink);
@@ -128,8 +144,15 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   font-weight: 700;
   white-space: nowrap;
   min-height: 36px;
+  flex-shrink: 0;
 }
 .date-bar button:active { background: var(--color-gold-dark); }
+#clearDateBtn {
+  background: transparent;
+  color: #e7e9ec;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+#clearDateBtn:active { background: rgba(255, 255, 255, 0.12); }
 
 /* ---------- メインコンテンツ ---------- */
 
@@ -140,12 +163,16 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   padding-bottom: calc(28px + var(--safe-bottom));
 }
 
+/* 地図移動用の検索ボックス（一覧画面） */
+.map-search { padding: 12px 16px 0; }
+
 .map {
   width: 100%;
   height: 42vh;
   background: var(--color-line);
+  margin-top: 10px;
 }
-.map-small { height: 34vh; }
+.map-small { height: 34vh; margin-top: 0; }
 
 .map-note {
   margin: 10px 16px 0;
@@ -157,7 +184,7 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   display: inline-block;
 }
 
-/* ---------- 保存した場所リスト ---------- */
+/* ---------- 場所リスト（一覧画面の下部／登録場所一覧画面） ---------- */
 
 .place-list-section { padding: 16px; }
 .section-header {
@@ -185,7 +212,6 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
 }
-.place-item.inactive { opacity: 0.6; }
 
 .stub-main {
   flex: 1;
@@ -220,19 +246,6 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   flex-wrap: wrap;
 }
 
-.badge {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 4px;
-  border: 1px solid currentColor;
-  letter-spacing: 0.04em;
-  transform: rotate(-3deg);
-  margin-right: auto;
-}
-.place-item.active .badge { color: var(--color-teal); background: rgba(58, 125, 123, 0.1); }
-.place-item.inactive .badge { color: var(--color-text-muted); background: rgba(107, 102, 89, 0.08); }
-
 .focus-btn, .delete-btn {
   border: none;
   border-radius: 8px;
@@ -240,6 +253,10 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   font-size: 12px;
   cursor: pointer;
   min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 .focus-btn { background: var(--color-paper); color: var(--color-ink); }
 .focus-btn:active { background: var(--color-line); }
@@ -367,6 +384,8 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   box-shadow: 0 0 0 3px rgba(58, 125, 123, 0.15);
 }
 
+/* ---------- 検索ボックス（追加画面の場所検索／一覧画面の地図検索で共通） ---------- */
+
 .search-row { display: flex; gap: 8px; }
 .search-row input { flex: 1; min-width: 0; }
 .search-row button {
@@ -392,7 +411,7 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   background: var(--color-surface);
   -webkit-overflow-scrolling: touch;
 }
-.search-results:not(:empty) { border: 1px solid var(--color-line); }
+.search-results:not(:empty) { border: 1px solid var(--color-line); margin-bottom: 10px; }
 .search-results li {
   padding: 10px 12px;
   font-size: 13px;

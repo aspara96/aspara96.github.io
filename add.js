@@ -26,9 +26,7 @@
   init();
 
   function init() {
-    var today = formatDate(new Date());
-    els.startDate.value = today;
-    els.endDate.value = today;
+    // 期間は任意項目のため、初期値は空欄のままにする
     initMap();
     bindEvents();
   }
@@ -103,12 +101,17 @@
     }
 
     var name = els.name.value.trim();
+    if (!name) return;
+
     var startDate = els.startDate.value;
     var endDate = els.endDate.value;
 
-    if (!name || !startDate || !endDate) return;
-
-    if (startDate > endDate) {
+    // 期間は「両方入力」か「両方空欄（期限なし）」のどちらかのみ許可する
+    if ((startDate && !endDate) || (!startDate && endDate)) {
+      alert('開始日・終了日は両方入力するか、両方空欄にしてください（空欄の場合は期限なしとして登録されます）');
+      return;
+    }
+    if (startDate && endDate && startDate > endDate) {
       alert('終了日は開始日以降の日付にしてください');
       return;
     }
@@ -123,7 +126,7 @@
       name: name,
       lat: selectedCoords.lat,
       lng: selectedCoords.lng,
-      startDate: startDate,
+      startDate: startDate, // 空文字の場合は「期限なし」
       endDate: endDate,
       memo: els.memo.value.trim(),
       url: url,

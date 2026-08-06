@@ -107,6 +107,7 @@
   }
 
   // 期間の条件に合わせてピンを張り直す（日付変更・今日・すべて・追加・削除のたびに呼ぶ）
+  // 期限が設定されていない場所は、表示基準日に関わらず常に対象になる（isActiveOn 参照）
   function refreshMarkersForDateFilter() {
     var viewDate = getViewDate();
 
@@ -132,14 +133,16 @@
   function buildPopupContent(p) {
     var wrap = document.createElement('div');
 
-    var nameEl = document.createElement('span');
+    // 場所の名前をタップすると詳細画面に遷移する
+    var nameEl = document.createElement('a');
     nameEl.className = 'popup-place-name';
+    nameEl.href = 'detail.html?id=' + encodeURIComponent(p.id);
     nameEl.textContent = p.name;
     wrap.appendChild(nameEl);
 
     var datesEl = document.createElement('span');
     datesEl.className = 'popup-place-dates';
-    datesEl.textContent = p.startDate + ' 〜 ' + p.endDate;
+    datesEl.textContent = formatPeriodLabel(p);
     wrap.appendChild(datesEl);
 
     if (p.memo) {
@@ -215,6 +218,19 @@
     sorted.forEach(function (p) {
       var li = document.createElement('li');
       li.className = 'place-item';
+      li.tabIndex = 0;
+
+      // アイテム（行）自体をタップ/Enterで詳細画面へ
+      var goToDetail = function () {
+        window.location.href = 'detail.html?id=' + encodeURIComponent(p.id);
+      };
+      li.addEventListener('click', goToDetail);
+      li.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          goToDetail();
+        }
+      });
 
       // 左側: 場所の情報
       var stubMain = document.createElement('div');
@@ -239,6 +255,7 @@
         linkEl.target = '_blank';
         linkEl.rel = 'noopener noreferrer';
         linkEl.textContent = '🔗 参考リンク';
+        linkEl.addEventListener('click', function (e) { e.stopPropagation(); });
         stubMain.appendChild(linkEl);
       }
 
@@ -249,7 +266,8 @@
       focusBtn.type = 'button';
       focusBtn.className = 'focus-btn';
       focusBtn.textContent = '地図で見る';
-      focusBtn.addEventListener('click', function () {
+      focusBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
         map.setView([p.lat, p.lng], 15);
         markersLayer.eachLayer(function (m) {
           var ll = m.getLatLng();
@@ -264,7 +282,8 @@
       delBtn.type = 'button';
       delBtn.className = 'delete-btn';
       delBtn.textContent = '削除';
-      delBtn.addEventListener('click', function () {
+      delBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
         if (confirm('「' + p.name + '」を削除しますか？')) {
           deletePlace(p.id);
         }
@@ -273,16 +292,13 @@
 
       stubMain.appendChild(actions);
 
-      // 右側: チケット風の日付スタブ
+      // 右側: チケット風の期間スタブ
       var stubSide = document.createElement('div');
       stubSide.className = 'stub-side';
 
       var dateEl = document.createElement('div');
       dateEl.className = 'stub-date';
-      dateEl.innerHTML =
-        formatDateShort(p.startDate) +
-        '<div class="to">〜</div>' +
-        formatDateShort(p.endDate);
+      renderPeriodStub(dateEl, p);
       stubSide.appendChild(dateEl);
 
       li.appendChild(stubMain);
@@ -291,7 +307,7 @@
     });
   }
 
-  // list.html から「地図で見る」で遷移してきた場合、その場所にフォーカスする
+  // list.html / detail.html から「地図で見る」で遷移してきた場合、その場所にフォーカスする
   function handleFocusParam() {
     var params = new URLSearchParams(window.location.search);
     var id = params.get('focus');

@@ -80,6 +80,10 @@
     periodEl.textContent = hasPeriod(place) ? formatPeriodLabel(place) : '期限なし（いつでも表示）';
     card.appendChild(periodEl);
 
+    if (place.address) {
+      card.appendChild(buildTextRow('住所', place.address));
+    }
+
     if (place.memo) {
       card.appendChild(buildTextRow('メモ', place.memo));
     }
@@ -87,8 +91,6 @@
     if (place.url) {
       card.appendChild(buildLinkRow('参考URL', place.url));
     }
-
-    card.appendChild(buildTextRow('座標', place.lat.toFixed(5) + ', ' + place.lng.toFixed(5)));
 
     var actions = document.createElement('div');
     actions.className = 'detail-actions';

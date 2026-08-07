@@ -9,6 +9,7 @@
   var places = loadPlaces();
 
   var els = {
+    searchQuery: document.getElementById('placeSearchQuery'),
     placeList: document.getElementById('placeList'),
     placeCount: document.getElementById('placeCount'),
     clearAllBtn: document.getElementById('clearAllBtn'),
@@ -22,6 +23,8 @@
   }
 
   function bindEvents() {
+    els.searchQuery.addEventListener('input', renderList);
+
     els.clearAllBtn.addEventListener('click', function () {
       if (places.length === 0) return;
       if (confirm('保存されている場所を全て削除します。よろしいですか？')) {
@@ -32,6 +35,35 @@
     });
   }
 
+  // ---------- 検索・並び替え ----------
+
+  // 名前・住所・メモを対象に大文字小文字を区別せず部分一致で絞り込む
+  function getFilteredPlaces() {
+    var query = els.searchQuery.value.trim().toLowerCase();
+    if (!query) return places.slice();
+
+    return places.filter(function (p) {
+      var haystack = [p.name, p.address, p.memo].filter(Boolean).join(' ').toLowerCase();
+      return haystack.indexOf(query) !== -1;
+    });
+  }
+
+  // 1. 終了日の昇順（未設定は下） 2. 開始日の昇順（未設定は下）
+  function comparePlaces(a, b) {
+    var byEnd = compareDateAscEmptyLast(a.endDate, b.endDate);
+    if (byEnd !== 0) return byEnd;
+    return compareDateAscEmptyLast(a.startDate, b.startDate);
+  }
+
+  function compareDateAscEmptyLast(dateA, dateB) {
+    var hasA = !!dateA;
+    var hasB = !!dateB;
+    if (hasA && hasB) return dateA < dateB ? -1 : (dateA > dateB ? 1 : 0);
+    if (hasA && !hasB) return -1; // 設定されている方が先
+    if (!hasA && hasB) return 1;
+    return 0; // どちらも未設定
+  }
+
   function deletePlace(id) {
     places = places.filter(function (p) { return p.id !== id; });
     savePlaces(places);
@@ -39,7 +71,10 @@
   }
 
   function renderList() {
-    els.placeCount.textContent = '(' + places.length + ')';
+    var filtered = getFilteredPlaces();
+    var sorted = filtered.slice().sort(comparePlaces);
+
+    els.placeCount.textContent = '(' + sorted.length + ')';
     els.placeList.innerHTML = '';
 
     if (places.length === 0) {
@@ -50,9 +85,13 @@
       return;
     }
 
-    var sorted = places.slice().sort(function (a, b) {
-      return a.startDate.localeCompare(b.startDate);
-    });
+    if (sorted.length === 0) {
+      var noMatchLi = document.createElement('li');
+      noMatchLi.className = 'empty-state';
+      noMatchLi.textContent = '検索条件に一致する場所がありません';
+      els.placeList.appendChild(noMatchLi);
+      return;
+    }
 
     sorted.forEach(function (p) {
       var li = document.createElement('li');

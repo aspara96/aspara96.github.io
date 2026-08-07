@@ -2,14 +2,14 @@
 // 追加画面（add.html）専用の処理です。
 // 場所の指定は「住所」欄への入力を正としつつ、検索結果の選択や地図タップでも
 // 住所欄を自動入力できるようにしています。
-// common.js の関数（loadPlaces / savePlaces / formatDate / createSelectionIcon /
-// geocodeSearch / reverseGeocode など）に依存しています。
+// 住所からの座標検索には common.js の addressSearch（国土地理院→Nominatimの順で検索）を
+// 使用しており、検索結果の選択を経なくても、入力した住所だけで自動的にピンが立ちます。
 
 (function () {
   'use strict';
 
-  // 住所欄の内容と紐づいた「確定済みの座標」。検索結果の選択・地図タップで設定され、
-  // 住所欄がユーザーによって手入力・編集されると null に戻る（= 保存時に住所から再検索する）。
+  // 住所欄の内容と紐づいた「確定済みの座標」。検索結果の選択・地図タップ・住所からの
+  // 自動解決で設定され、住所欄がユーザーによって手入力・編集されると null に戻る。
   var confirmedLocation = null; // { lat, lng }
 
   var map = null;
@@ -65,6 +65,9 @@
       confirmedLocation = null;
       updateSaveButtonState();
     });
+
+    // 住所欄から離れたタイミングで、検索結果を選ばなくても自動的にピンを立てる
+    els.address.addEventListener('blur', onAddressBlur);
   }
 
   function updateSaveButtonState() {
@@ -78,6 +81,36 @@
       marker = L.marker([lat, lng], { icon: createSelectionIcon() }).addTo(map);
     }
     map.panTo([lat, lng]);
+  }
+
+  // 住所文字列から座標を解決する（国土地理院→Nominatimの順で検索、common.jsのaddressSearchを利用）
+  function resolveAddressLocation(address) {
+    return addressSearch(address).then(function (results) {
+      if (!results || results.length === 0) {
+        throw new Error('no results');
+      }
+      return { lat: parseFloat(results[0].lat), lng: parseFloat(results[0].lon) };
+    });
+  }
+
+  // ---------- 住所欄から手を離したら、自動的に座標を解決してピンを立てる ----------
+
+  function onAddressBlur() {
+    var address = els.address.value.trim();
+    if (!address || confirmedLocation) return; // 空欄、または既に確定済みなら何もしない
+
+    resolveAddressLocation(address)
+      .then(function (loc) {
+        // 解決している間に住所欄が編集された場合は、その結果を反映しない
+        if (els.address.value.trim() !== address) return;
+        confirmedLocation = loc;
+        placeMarkerAt(loc.lat, loc.lng);
+        map.setView([loc.lat, loc.lng], 15);
+        updateSaveButtonState();
+      })
+      .catch(function () {
+        // ここでは失敗を通知しない（保存時に改めて案内する）
+      });
   }
 
   // ---------- 地図タップ：逆ジオコーディングで住所を自動入力 ----------
@@ -114,7 +147,7 @@
 
     showSearchLoading(els.searchResults);
 
-    geocodeSearch(q)
+    addressSearch(q)
       .then(function (data) {
         renderSearchResultsList(els.searchResults, data, function (r) {
           var lat = parseFloat(r.lat);
@@ -165,23 +198,18 @@
     }
 
     if (confirmedLocation) {
-      // 検索選択・地図タップ済みで、住所欄も編集されていない → その座標をそのまま使う
+      // 検索選択・地図タップ・住所の自動解決済みで、住所欄も編集されていない → その座標をそのまま使う
       finishSave(name, address, confirmedLocation.lat, confirmedLocation.lng, startDate, endDate, url);
       return;
     }
 
-    // 住所欄が手入力・編集されている → 保存時にその住所から座標を検索する
+    // まだ座標が確定していない（自動解決前に保存が押された等）→ ここで住所から座標を検索する
     els.saveBtn.disabled = true;
     els.saveBtn.textContent = '住所を確認中...';
 
-    geocodeSearch(address)
-      .then(function (results) {
-        if (!results || results.length === 0) {
-          throw new Error('no results');
-        }
-        var lat = parseFloat(results[0].lat);
-        var lng = parseFloat(results[0].lon);
-        finishSave(name, address, lat, lng, startDate, endDate, url);
+    resolveAddressLocation(address)
+      .then(function (loc) {
+        finishSave(name, address, loc.lat, loc.lng, startDate, endDate, url);
       })
       .catch(function () {
         els.saveBtn.disabled = false;

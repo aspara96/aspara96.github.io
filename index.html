@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1d2b3a">
-<title>行きたい場所マップ</title>
+<title>いつマップ</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,26 +16,28 @@
 <body>
   <div class="app">
 
-    <header class="app-header">
-      <h1><span class="header-icon" aria-hidden="true">&#9992;</span>行きたい場所マップ</h1>
-      <a href="list.html" class="header-link" aria-label="登録した場所の一覧を見る">&#128203;</a>
+    <header class="app-header index-header">
+      <div class="header-text">
+        <h1><span class="header-icon" aria-hidden="true">&#9992;</span>いつマップ</h1>
+        <p class="header-subtitle">行き先を日付と場所で管理する</p>
+      </div>
     </header>
 
-    <div class="date-bar">
-      <span class="date-bar-icon" aria-hidden="true">&#128197;</span>
-      <input type="date" id="viewDate" aria-label="表示基準日">
-      <button id="todayBtn" type="button">今日</button>
-      <button id="clearDateBtn" type="button">すべて</button>
-    </div>
-
     <main class="main-content">
-      <div class="map-search">
-        <div class="search-row">
+      <div class="filter-bar">
+        <div class="filter-row">
+          <span class="filter-label">日付</span>
+          <input type="date" id="viewDate" aria-label="表示基準日">
+          <button id="todayBtn" type="button">今日</button>
+          <button id="clearDateBtn" type="button">すべて</button>
+        </div>
+        <div class="filter-row">
+          <span class="filter-label">場所</span>
           <input type="text" id="mapSearchQuery" placeholder="例: 東京タワー">
           <button type="button" id="mapSearchBtn">検索</button>
         </div>
-        <ul id="mapSearchResults" class="search-results"></ul>
       </div>
+      <ul id="mapSearchResults" class="search-results"></ul>
 
       <div id="map" class="map"></div>
 

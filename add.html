@@ -23,21 +23,21 @@
 
     <main class="main-content add-content">
       <div id="map" class="map map-small"></div>
-      <p class="hint">検索結果を選ぶか、地図を直接タップして場所を指定できます</p>
-      <div class="coords-display">選択中の座標: <span id="coordsText">未選択</span></div>
+      <p class="hint">地図を直接タップすると、その場所の住所が自動入力されます</p>
 
       <form id="placeForm" class="add-form">
-        <label for="searchQuery">住所・地名で検索
+        <label for="placeName">場所の名前
+          <input type="text" id="placeName" required placeholder="例: 京都 清水寺">
+        </label>
+
+        <label for="placeAddress">住所
           <div class="search-row">
-            <input type="text" id="searchQuery" placeholder="例: 京都駅">
+            <input type="text" id="placeAddress" required placeholder="例: 京都府京都市東山区清水1丁目294">
             <button type="button" id="searchBtn">検索</button>
           </div>
         </label>
         <ul id="searchResults" class="search-results"></ul>
-
-        <label for="placeName">場所の名前
-          <input type="text" id="placeName" required placeholder="例: 京都 清水寺">
-        </label>
+        <p class="hint">住所を直接入力するか、地名などで検索して候補から選択してください</p>
 
         <label for="placeUrl">参考URL（任意）
           <input type="url" id="placeUrl" placeholder="https://...">

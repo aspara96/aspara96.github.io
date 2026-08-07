@@ -14,6 +14,8 @@
   --color-line: #ddd8c8;
   --color-text: #1f2937;
   --color-text-muted: #6b6659;
+  --color-pin-red: #c0392b;
+  --color-pin-blue: #2f6fb0;
   --radius-md: 10px;
   --radius-lg: 16px;
   --shadow-sm: 0 1px 3px rgba(29, 43, 58, 0.1);
@@ -174,8 +176,29 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 }
 .map-small { height: 34vh; margin-top: 0; }
 
-.map-note {
+/* ピンの色分けを説明する凡例 */
+.map-legend {
   margin: 10px 16px 0;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+.legend-dot.legend-red { background: var(--color-pin-red); }
+.legend-dot.legend-blue { background: var(--color-pin-blue); }
+
+.map-note {
+  margin: 8px 16px 0;
   background: var(--color-ink);
   color: var(--color-paper);
   padding: 7px 14px;
@@ -447,16 +470,19 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 #saveBtn:not(:disabled):active { background: var(--color-gold-dark); color: #fff; }
 
 /* ---------- 地図ピン ---------- */
+/* 涙型のピン。終了日が表示基準日から1ヶ月以内に迫っている場所は赤、それ以外は青。 */
 
 .place-marker-inner {
   width: 22px;
   height: 22px;
-  background: var(--color-ink);
-  border: 3px solid var(--color-gold);
   border-radius: 50% 50% 50% 0;
   transform: rotate(-45deg);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+  border: 3px solid #fff;
 }
+.place-marker-inner.marker-red { background: var(--color-pin-red); }
+.place-marker-inner.marker-blue { background: var(--color-pin-blue); }
+
 .selection-marker-inner {
   width: 16px;
   height: 16px;

@@ -71,7 +71,8 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   z-index: 20;
 }
 .app-header h1 {
-  font-size: 19px;
+  font-size: 18px;
+  line-height: 1.2;
   color: var(--color-gold);
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -79,23 +80,18 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   align-items: center;
   gap: 8px;
 }
-.header-icon { font-size: 18px; }
+.header-icon { font-size: 16px; }
 
-.header-link {
-  margin-left: auto;
-  color: var(--color-gold);
-  text-decoration: none;
-  font-size: 19px;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  flex-shrink: 0;
+/* 地図画面のヘッダーのみ：タイトル＋説明文を縦に詰めて表示し、縦幅を最小限にする */
+.index-header { padding: calc(8px + var(--safe-top)) 18px 8px; }
+.header-text { display: flex; flex-direction: column; gap: 2px; }
+.header-subtitle {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.3;
+  color: rgba(244, 243, 236, 0.72);
+  font-weight: 500;
 }
-.header-link:active { background: rgba(192, 138, 46, 0.18); }
 
 .add-header { gap: 14px; }
 .back-btn {
@@ -113,30 +109,45 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 }
 .back-btn:active { background: rgba(192, 138, 46, 0.18); }
 
-/* ---------- 表示基準日バー（一覧画面のみ） ---------- */
+/* ---------- 日付・場所フィルター（地図画面上部） ---------- */
+/* 「日付」「場所」の2行を1枚のカードにまとめ、縦幅を抑えたコンパクトな見た目にする */
 
-.date-bar {
+.filter-bar {
+  margin: 12px 16px 0;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.filter-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
-  background: var(--color-ink-light);
-  color: #e7e9ec;
-  font-size: 13px;
+  padding: 8px 12px;
 }
-.date-bar-icon { font-size: 15px; flex-shrink: 0; }
-.date-bar input[type="date"] {
+.filter-row + .filter-row { border-top: 1px solid var(--color-line); }
+
+.filter-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-ink);
+  flex-shrink: 0;
+  width: 34px;
+}
+
+.filter-row input[type="date"],
+.filter-row input[type="text"] {
   flex: 1;
   min-width: 0;
   padding: 7px 8px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  border: 1px solid var(--color-line);
   border-radius: 8px;
-  color-scheme: dark;
+  background: var(--color-paper);
+  color: var(--color-text);
 }
-.date-bar button {
-  padding: 8px 12px;
+
+.filter-row button {
+  padding: 0 14px;
   border: none;
   background: var(--color-gold);
   color: var(--color-ink);
@@ -145,16 +156,13 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
-  min-height: 36px;
+  min-height: 34px;
   flex-shrink: 0;
 }
-.date-bar button:active { background: var(--color-gold-dark); }
-#clearDateBtn {
-  background: transparent;
-  color: #e7e9ec;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-}
-#clearDateBtn:active { background: rgba(255, 255, 255, 0.12); }
+.filter-row button:active { background: var(--color-gold-dark); }
+
+/* フィルターバーの直下に出る地名検索の候補一覧 */
+#mapSearchResults { margin: 6px 16px 0; }
 
 /* ---------- メインコンテンツ ---------- */
 
@@ -164,9 +172,6 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   flex-direction: column;
   padding-bottom: calc(28px + var(--safe-bottom));
 }
-
-/* 地図移動用の検索ボックス（一覧画面） */
-.map-search { padding: 12px 16px 0; }
 
 .map {
   width: 100%;

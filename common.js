@@ -145,6 +145,35 @@ function geocodeSearch(query) {
   });
 }
 
+// 住所文字列から座標を検索する。日本の住所（丁目・番地など）は Nominatim だけでは
+// 見つからないことが多いため、まず国土地理院の住所検索APIを試し、
+// 結果が得られない場合のみ Nominatim にフォールバックする。
+// どちらの結果も { display_name, lat, lon } の形式に揃えて返す。
+function addressSearch(query) {
+  var gsiUrl = 'https://msearch.gsi.go.jp/address-search/AddressSearch?q=' + encodeURIComponent(query);
+
+  return fetch(gsiUrl)
+    .then(function (res) {
+      if (!res.ok) throw new Error('gsi request failed');
+      return res.json();
+    })
+    .then(function (data) {
+      if (Array.isArray(data) && data.length > 0) {
+        return data.map(function (item) {
+          return {
+            display_name: (item.properties && item.properties.title) ? item.properties.title : query,
+            lat: item.geometry.coordinates[1],
+            lon: item.geometry.coordinates[0],
+          };
+        });
+      }
+      return geocodeSearch(query); // 国土地理院で見つからない場合のフォールバック
+    })
+    .catch(function () {
+      return geocodeSearch(query); // 国土地理院API自体が失敗した場合のフォールバック
+    });
+}
+
 // 緯度経度から住所を取得する（地図タップ時の住所自動入力に使用）
 function reverseGeocode(lat, lng) {
   var url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&accept-language=ja&zoom=18';

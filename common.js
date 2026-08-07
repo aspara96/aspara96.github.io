@@ -145,6 +145,15 @@ function geocodeSearch(query) {
   });
 }
 
+// 緯度経度から住所を取得する（地図タップ時の住所自動入力に使用）
+function reverseGeocode(lat, lng) {
+  var url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&accept-language=ja&zoom=18';
+  return fetch(url).then(function (res) {
+    if (!res.ok) throw new Error('reverse geocode request failed');
+    return res.json();
+  });
+}
+
 function showSearchLoading(resultsEl) {
   resultsEl.innerHTML = '';
   var li = document.createElement('li');

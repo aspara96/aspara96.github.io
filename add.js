@@ -103,14 +103,10 @@
     var name = els.name.value.trim();
     if (!name) return;
 
-    var startDate = els.startDate.value;
-    var endDate = els.endDate.value;
+    var startDate = els.startDate.value; // 空欄可
+    var endDate = els.endDate.value;     // 空欄可
 
-    // 期間は「両方入力」か「両方空欄（期限なし）」のどちらかのみ許可する
-    if ((startDate && !endDate) || (!startDate && endDate)) {
-      alert('開始日・終了日は両方入力するか、両方空欄にしてください（空欄の場合は期限なしとして登録されます）');
-      return;
-    }
+    // 両方入力されている場合のみ、前後関係をチェックする
     if (startDate && endDate && startDate > endDate) {
       alert('終了日は開始日以降の日付にしてください');
       return;
@@ -126,8 +122,8 @@
       name: name,
       lat: selectedCoords.lat,
       lng: selectedCoords.lng,
-      startDate: startDate, // 空文字の場合は「期限なし」
-      endDate: endDate,
+      startDate: startDate, // 空文字の場合あり
+      endDate: endDate,     // 空文字の場合あり
       memo: els.memo.value.trim(),
       url: url,
     };

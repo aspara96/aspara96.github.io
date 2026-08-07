@@ -106,10 +106,17 @@
     return els.viewDate.value; // 空文字 = 期間指定なし（すべて表示）
   }
 
+  // ピンの色分け・「あと1ヶ月」判定の基準日。表示基準日が未指定の場合は今日を使う。
+  function getReferenceDate() {
+    return getViewDate() || formatDate(new Date());
+  }
+
   // 期間の条件に合わせてピンを張り直す（日付変更・今日・すべて・追加・削除のたびに呼ぶ）
-  // 期限が設定されていない場所は、表示基準日に関わらず常に対象になる（isActiveOn 参照）
+  // 期限が設定されていない場所や、開始日/終了日の片方のみ設定された場所も isActiveOn の
+  // ルールに従って表示・非表示が決まる。
   function refreshMarkersForDateFilter() {
     var viewDate = getViewDate();
+    var referenceDate = getReferenceDate();
 
     dateFilteredPlaces = viewDate
       ? places.filter(function (p) { return isActiveOn(p, viewDate); })
@@ -117,7 +124,8 @@
 
     markersLayer.clearLayers();
     dateFilteredPlaces.forEach(function (p) {
-      var marker = L.marker([p.lat, p.lng], { icon: createPlaceIcon() }).addTo(markersLayer);
+      var urgent = isEndingSoon(p, referenceDate);
+      var marker = L.marker([p.lat, p.lng], { icon: createPlaceIcon(urgent) }).addTo(markersLayer);
       marker.bindPopup(buildPopupContent(p));
     });
 

@@ -17,7 +17,6 @@
     viewDate: document.getElementById('viewDate'),
     todayBtn: document.getElementById('todayBtn'),
     clearDateBtn: document.getElementById('clearDateBtn'),
-    mapNote: document.getElementById('mapNote'),
     placeList: document.getElementById('placeList'),
     placeCount: document.getElementById('placeCount'),
     clearAllBtn: document.getElementById('clearAllBtn'),
@@ -124,8 +123,8 @@
 
     markersLayer.clearLayers();
     dateFilteredPlaces.forEach(function (p) {
-      var urgent = isEndingSoon(p, referenceDate);
-      var marker = L.marker([p.lat, p.lng], { icon: createPlaceIcon(urgent) }).addTo(markersLayer);
+      var colorClass = getPinColorClass(p, referenceDate);
+      var marker = L.marker([p.lat, p.lng], { icon: createPlaceIcon(colorClass) }).addTo(markersLayer);
       marker.bindPopup(buildPopupContent(p));
     });
 
@@ -153,23 +152,6 @@
     datesEl.textContent = formatPeriodLabel(p);
     wrap.appendChild(datesEl);
 
-    if (p.memo) {
-      var memoEl = document.createElement('span');
-      memoEl.className = 'popup-place-memo';
-      memoEl.textContent = p.memo;
-      wrap.appendChild(memoEl);
-    }
-
-    if (p.url) {
-      var linkEl = document.createElement('a');
-      linkEl.className = 'popup-place-link';
-      linkEl.href = p.url;
-      linkEl.target = '_blank';
-      linkEl.rel = 'noopener noreferrer';
-      linkEl.textContent = '参考リンクを開く';
-      wrap.appendChild(linkEl);
-    }
-
     return wrap;
   }
 
@@ -188,15 +170,6 @@
     });
 
     renderPlaceList(visible);
-
-    var viewDate = getViewDate();
-    var periodLabel = viewDate ? viewDate : 'すべての期間';
-
-    if (places.length === 0) {
-      els.mapNote.textContent = '保存された場所はまだありません';
-    } else {
-      els.mapNote.textContent = periodLabel + ' ／ この範囲に ' + visible.length + ' 件';
-    }
   }
 
   function renderPlaceList(visiblePlaces) {
@@ -240,32 +213,10 @@
         }
       });
 
-      // 左側: 場所の情報
-      var stubMain = document.createElement('div');
-      stubMain.className = 'stub-main';
-
-      var nameEl = document.createElement('div');
+      var nameEl = document.createElement('span');
       nameEl.className = 'place-name';
       nameEl.textContent = p.name;
-      stubMain.appendChild(nameEl);
-
-      if (p.memo) {
-        var memoEl = document.createElement('div');
-        memoEl.className = 'place-memo';
-        memoEl.textContent = p.memo;
-        stubMain.appendChild(memoEl);
-      }
-
-      if (p.url) {
-        var linkEl = document.createElement('a');
-        linkEl.className = 'place-link';
-        linkEl.href = p.url;
-        linkEl.target = '_blank';
-        linkEl.rel = 'noopener noreferrer';
-        linkEl.textContent = '🔗 参考リンク';
-        linkEl.addEventListener('click', function (e) { e.stopPropagation(); });
-        stubMain.appendChild(linkEl);
-      }
+      li.appendChild(nameEl);
 
       var actions = document.createElement('div');
       actions.className = 'place-actions';
@@ -298,19 +249,7 @@
       });
       actions.appendChild(delBtn);
 
-      stubMain.appendChild(actions);
-
-      // 右側: チケット風の期間スタブ
-      var stubSide = document.createElement('div');
-      stubSide.className = 'stub-side';
-
-      var dateEl = document.createElement('div');
-      dateEl.className = 'stub-date';
-      renderPeriodStub(dateEl, p);
-      stubSide.appendChild(dateEl);
-
-      li.appendChild(stubMain);
-      li.appendChild(stubSide);
+      li.appendChild(actions);
       els.placeList.appendChild(li);
     });
   }

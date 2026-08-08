@@ -16,6 +16,7 @@
   --color-text-muted: #6b6659;
   --color-pin-red: #c0392b;
   --color-pin-blue: #2f6fb0;
+  --color-pin-black: #262626;
   --radius-md: 10px;
   --radius-lg: 16px;
   --shadow-sm: 0 1px 3px rgba(29, 43, 58, 0.1);
@@ -82,14 +83,14 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 }
 .header-icon { font-size: 16px; }
 
-/* 地図画面のヘッダーのみ：タイトル＋説明文を縦に詰めて表示し、縦幅を最小限にする */
+/* 地図画面のヘッダーのみ：タイトルと説明文を横並びにし、縦幅を最小限にする */
 .index-header { padding: calc(8px + var(--safe-top)) 18px 8px; }
-.header-text { display: flex; flex-direction: column; gap: 2px; }
+.header-text { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .header-subtitle {
   margin: 0;
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.3;
-  color: rgba(244, 243, 236, 0.72);
+  color: rgba(244, 243, 236, 0.75);
   font-weight: 500;
 }
 
@@ -139,7 +140,9 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 .filter-row input[type="text"] {
   flex: 1;
   min-width: 0;
-  padding: 7px 8px;
+  height: 34px;
+  padding: 0 8px;
+  box-sizing: border-box;
   border: 1px solid var(--color-line);
   border-radius: 8px;
   background: var(--color-paper);
@@ -200,17 +203,22 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   vertical-align: middle;
 }
 .legend-dot.legend-red { background: var(--color-pin-red); }
+.legend-dot.legend-black { background: var(--color-pin-black); }
 .legend-dot.legend-blue { background: var(--color-pin-blue); }
 
-.map-note {
+/* 「行き先一覧」への導線ボタン（地図の下、以前のステータス表示があった位置） */
+.map-list-btn {
   margin: 8px 16px 0;
   background: var(--color-ink);
   color: var(--color-paper);
   padding: 7px 14px;
   border-radius: 999px;
   font-size: 12px;
+  font-weight: 700;
   display: inline-block;
+  text-decoration: none;
 }
+.map-list-btn:active { background: var(--color-ink-light); }
 
 /* 登録場所一覧画面の検索ボックス */
 .list-search { padding: 16px 16px 0; }
@@ -238,7 +246,7 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   margin-bottom: 12px;
 }
 .section-header h2 { font-size: 16px; color: var(--color-ink); }
-.section-header span { font-size: 13px; color: var(--color-text-muted); }
+.section-header span { font-size: 16px; color: var(--color-text-muted); }
 
 .place-list {
   list-style: none;
@@ -249,48 +257,37 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   gap: 14px;
 }
 
-/* リストの各アイテムはタップで詳細画面に遷移する（内部のボタン／リンクは除く） */
+/* リストの各アイテムはタップで詳細画面に遷移する（内部のボタン／リンクは除く）。
+   名前・「地図で見る」・「削除」のみを1行で表示し、縦幅を最小限に抑える。 */
 .place-item {
-  position: relative;
   display: flex;
+  align-items: center;
+  gap: 10px;
   background: var(--color-surface);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
+  padding: 8px 12px;
   cursor: pointer;
 }
 .place-item:active { background: #f7f5ee; }
 
-.stub-main {
+.place-name {
   flex: 1;
   min-width: 0;
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.place-name {
   font-family: 'Shippori Mincho', serif;
   font-weight: 700;
   font-size: 15px;
   color: var(--color-ink);
-  overflow-wrap: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.place-memo { font-size: 12px; color: var(--color-text-muted); font-style: italic; }
-.place-link {
-  font-size: 12px;
-  color: var(--color-teal);
-  text-decoration: none;
-  width: fit-content;
-}
-.place-link:active { text-decoration: underline; }
 
 .place-actions {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 4px;
-  flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .focus-btn, .delete-btn {
@@ -309,38 +306,6 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 .focus-btn:active { background: var(--color-line); }
 .delete-btn { background: #fbeae6; color: var(--color-rust); }
 .delete-btn:active { background: #f6d8d1; }
-
-.stub-side {
-  width: 68px;
-  flex-shrink: 0;
-  background: var(--color-ink);
-  color: #f4f3ec;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  padding: 10px 4px;
-  border-left: 2px dashed rgba(244, 243, 236, 0.3);
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-  text-align: center;
-}
-.stub-side::before,
-.stub-side::after {
-  content: "";
-  position: absolute;
-  right: calc(68px - 8px);
-  width: 16px;
-  height: 16px;
-  background: var(--color-paper);
-  border-radius: 50%;
-}
-.stub-side::before { top: -8px; }
-.stub-side::after { bottom: -8px; }
-
-.stub-date { font-size: 10.5px; letter-spacing: 0.02em; line-height: 1.5; }
-.stub-date .to { opacity: 0.6; font-size: 9px; }
-.stub-date .no-period { font-size: 11px; font-weight: 700; line-height: 1.3; }
 
 .empty-state {
   color: var(--color-text-muted);
@@ -492,6 +457,7 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 }
 .place-marker-inner.marker-red { background: var(--color-pin-red); }
 .place-marker-inner.marker-blue { background: var(--color-pin-blue); }
+.place-marker-inner.marker-black { background: var(--color-pin-black); }
 
 .selection-marker-inner {
   width: 16px;
@@ -518,8 +484,6 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   text-underline-offset: 2px;
 }
 .popup-place-dates { font-size: 12px; color: var(--color-text-muted); display: block; }
-.popup-place-memo { font-size: 12px; color: var(--color-text-muted); display: block; margin-top: 4px; font-style: italic; }
-.popup-place-link { font-size: 12px; color: var(--color-teal); display: inline-block; margin-top: 4px; }
 
 /* ---------- 詳細画面（detail.html） ---------- */
 

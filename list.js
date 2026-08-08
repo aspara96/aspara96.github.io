@@ -1,7 +1,7 @@
 // list.js
 // 登録した場所の一覧画面（list.html）専用の処理です。地図・期間フィルターに関係なく、
 // 保存されている場所を常にすべて表示します。
-// common.js の関数（loadPlaces / savePlaces / renderPeriodStub など）に依存しています。
+// common.js の関数（loadPlaces / savePlaces など）に依存しています。
 
 (function () {
   'use strict';
@@ -110,32 +110,10 @@
         }
       });
 
-      // 左側: 場所の情報
-      var stubMain = document.createElement('div');
-      stubMain.className = 'stub-main';
-
-      var nameEl = document.createElement('div');
+      var nameEl = document.createElement('span');
       nameEl.className = 'place-name';
       nameEl.textContent = p.name;
-      stubMain.appendChild(nameEl);
-
-      if (p.memo) {
-        var memoEl = document.createElement('div');
-        memoEl.className = 'place-memo';
-        memoEl.textContent = p.memo;
-        stubMain.appendChild(memoEl);
-      }
-
-      if (p.url) {
-        var linkEl = document.createElement('a');
-        linkEl.className = 'place-link';
-        linkEl.href = p.url;
-        linkEl.target = '_blank';
-        linkEl.rel = 'noopener noreferrer';
-        linkEl.textContent = '🔗 参考リンク';
-        linkEl.addEventListener('click', function (e) { e.stopPropagation(); });
-        stubMain.appendChild(linkEl);
-      }
+      li.appendChild(nameEl);
 
       var actions = document.createElement('div');
       actions.className = 'place-actions';
@@ -160,19 +138,7 @@
       });
       actions.appendChild(delBtn);
 
-      stubMain.appendChild(actions);
-
-      // 右側: チケット風の期間スタブ
-      var stubSide = document.createElement('div');
-      stubSide.className = 'stub-side';
-
-      var dateEl = document.createElement('div');
-      dateEl.className = 'stub-date';
-      renderPeriodStub(dateEl, p);
-      stubSide.appendChild(dateEl);
-
-      li.appendChild(stubMain);
-      li.appendChild(stubSide);
+      li.appendChild(actions);
       els.placeList.appendChild(li);
     });
   }

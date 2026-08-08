@@ -77,7 +77,7 @@
 
     var periodEl = document.createElement('div');
     periodEl.className = 'detail-period' + (hasPeriod(place) ? '' : ' no-period-badge');
-    periodEl.textContent = hasPeriod(place) ? formatPeriodLabel(place) : '期限なし（いつでも表示）';
+    periodEl.textContent = formatPeriodLabel(place);
     card.appendChild(periodEl);
 
     if (place.address) {

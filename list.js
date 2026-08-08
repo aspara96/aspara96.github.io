@@ -110,10 +110,21 @@
         }
       });
 
+      var infoEl = document.createElement('div');
+      infoEl.className = 'place-info';
+
       var nameEl = document.createElement('span');
       nameEl.className = 'place-name';
       nameEl.textContent = p.name;
-      li.appendChild(nameEl);
+      infoEl.appendChild(nameEl);
+
+      // 開始日・終了日（期限なしの場合も formatPeriodLabel で表記を統一）
+      var periodEl = document.createElement('span');
+      periodEl.className = 'place-period';
+      periodEl.textContent = formatPeriodLabel(p);
+      infoEl.appendChild(periodEl);
+
+      li.appendChild(infoEl);
 
       var actions = document.createElement('div');
       actions.className = 'place-actions';

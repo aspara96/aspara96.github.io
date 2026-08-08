@@ -81,29 +81,6 @@ function formatPeriodLabel(place) {
   return formatDateShort(place.endDate) + ' まで';
 }
 
-// チケット風スタブ(右側の日付表示)の中身を組み立てる
-function renderPeriodStub(el, place) {
-  var hasStart = !!place.startDate;
-  var hasEnd = !!place.endDate;
-
-  if (!hasStart && !hasEnd) {
-    el.innerHTML = '<div class="no-period">期限<br>なし</div>';
-    return;
-  }
-  if (hasStart && hasEnd) {
-    el.innerHTML =
-      formatDateShort(place.startDate) +
-      '<div class="to">〜</div>' +
-      formatDateShort(place.endDate);
-    return;
-  }
-  if (hasStart) {
-    el.innerHTML = formatDateShort(place.startDate) + '<div class="to">から</div>';
-    return;
-  }
-  el.innerHTML = formatDateShort(place.endDate) + '<div class="to">まで</div>';
-}
-
 // 終了日が referenceDate から1ヶ月先までの間に含まれるかどうか（地図ピンの色分けに使用）
 function isEndingSoon(place, referenceDate) {
   if (!place.endDate) return false;
@@ -111,11 +88,23 @@ function isEndingSoon(place, referenceDate) {
   return place.endDate >= referenceDate && place.endDate <= rangeEnd;
 }
 
+// 終了日が「今日」より前かどうか（表示基準日ではなく、実際の今日の日付で判定する）
+function isPastDeadline(place) {
+  if (!place.endDate) return false;
+  return place.endDate < formatDate(new Date());
+}
+
+// 地図ピンの色分けクラスを決定する（優先順位: 終了日超過(黒) > 終了日が近い(赤) > それ以外(青)）
+function getPinColorClass(place, referenceDate) {
+  if (isPastDeadline(place)) return 'marker-black';
+  if (isEndingSoon(place, referenceDate)) return 'marker-red';
+  return 'marker-blue';
+}
+
 // ---------- 地図ピン ----------
 
-// 保存済みの場所用ピン（涙型）。urgent が true なら赤、false なら青。
-function createPlaceIcon(urgent) {
-  var colorClass = urgent ? 'marker-red' : 'marker-blue';
+// 保存済みの場所用ピン（涙型）。colorClass には getPinColorClass() の戻り値を渡す。
+function createPlaceIcon(colorClass) {
   return L.divIcon({
     className: 'place-marker',
     html: '<div class="place-marker-inner ' + colorClass + '"></div>',

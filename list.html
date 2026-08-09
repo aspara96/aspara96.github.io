@@ -1,4 +1,4 @@
-<!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -31,6 +31,17 @@
           <span id="placeCount">(0)</span>
         </div>
         <ul id="placeList" class="place-list"></ul>
+      </section>
+
+      <section class="data-actions-section">
+        <h2>バックアップ・共有</h2>
+        <p class="hint">行き先のデータをファイルに書き出せます。機種変更前のバックアップや、他の人との共有にご利用ください。</p>
+        <div class="data-actions">
+          <button type="button" id="exportBtn" class="data-action-btn">バックアップを書き出す</button>
+          <button type="button" id="importBtn" class="data-action-btn">バックアップを読み込む</button>
+        </div>
+        <input type="file" id="importFileInput" accept="application/json,.json" hidden>
+
         <button type="button" id="clearAllBtn" class="clear-all-btn">保存データを全て削除</button>
       </section>
     </main>
@@ -40,74 +51,5 @@
 
 <script src="common.js"></script>
 <script src="list.js"></script>
-</body>
-</html>
-
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#1d2b3a">
-<title>行き先を登録 | 行きたい場所マップ</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="app">
-
-    <header class="app-header add-header">
-      <a href="index.html" class="back-btn" aria-label="地図に戻る">&#8592;</a>
-      <h1>行き先を登録</h1>
-    </header>
-
-    <main class="main-content add-content">
-      <div id="map" class="map map-small"></div>
-      <p class="hint">地図を直接タップすると、その場所の住所が自動入力されます。</p>
-
-      <form id="placeForm" class="add-form">
-        <label for="placeName">登録名
-          <input type="text" id="placeName" required placeholder="例: 京都 清水寺">
-        </label>
-
-        <label for="placeAddress">住所・地名
-          <div class="search-row">
-            <input type="text" id="placeAddress" required placeholder="例: 京都府京都市東山区清水1丁目294">
-            <button type="button" id="searchBtn">検索</button>
-          </div>
-        </label>
-        <ul id="searchResults" class="search-results"></ul>
-        <p class="hint">住所を入力すると自動的に地図にピンが立ちます。地名などで検索して候補から選ぶこともできます。</p>
-
-        <label for="placeUrl">参考URL（任意）
-          <input type="url" id="placeUrl" placeholder="https://...">
-        </label>
-
-        <div class="date-range">
-          <label for="startDate">開始日（任意）
-            <input type="date" id="startDate">
-          </label>
-          <label for="endDate">終了日（任意）
-            <input type="date" id="endDate">
-          </label>
-        </div>
-        <p class="hint">開始日・終了日はどちらか一方だけの入力もできます。</p>
-
-        <label for="placeMemo">メモ（任意）
-          <textarea id="placeMemo" rows="3" placeholder="行きたい理由など"></textarea>
-        </label>
-
-        <button type="submit" id="saveBtn" disabled>登録</button>
-      </form>
-    </main>
-  </div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="common.js"></script>
-<script src="add.js"></script>
 </body>
 </html>

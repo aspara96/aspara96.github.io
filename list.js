@@ -12,6 +12,9 @@
     searchQuery: document.getElementById('placeSearchQuery'),
     placeList: document.getElementById('placeList'),
     placeCount: document.getElementById('placeCount'),
+    exportBtn: document.getElementById('exportBtn'),
+    importBtn: document.getElementById('importBtn'),
+    importFileInput: document.getElementById('importFileInput'),
     clearAllBtn: document.getElementById('clearAllBtn'),
   };
 
@@ -25,6 +28,12 @@
   function bindEvents() {
     els.searchQuery.addEventListener('input', renderList);
 
+    els.exportBtn.addEventListener('click', onExport);
+    els.importBtn.addEventListener('click', function () {
+      els.importFileInput.click();
+    });
+    els.importFileInput.addEventListener('change', onImportFileSelected);
+
     els.clearAllBtn.addEventListener('click', function () {
       if (places.length === 0) return;
       if (confirm('保存されている場所を全て削除します。よろしいですか？')) {
@@ -33,6 +42,129 @@
         renderList();
       }
     });
+  }
+
+  // ---------- バックアップの書き出し・共有 ----------
+
+  function onExport() {
+    if (places.length === 0) {
+      alert('書き出せる行き先がありません。');
+      return;
+    }
+
+    var json = JSON.stringify(places, null, 2);
+    var filename = 'itsumap-backup-' + formatDate(new Date()).replace(/-/g, '') + '.json';
+
+    // iOSなど対応環境では共有シート（AirDrop・メッセージ・メールなど）から直接送れるようにする
+    try {
+      var file = new File([json], filename, { type: 'application/json' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({
+          files: [file],
+          title: 'いつマップ バックアップ',
+          text: '「いつマップ」の行き先データです。',
+        }).catch(function () {
+          // 共有をキャンセルした場合などは何もしない
+        });
+        return;
+      }
+    } catch (e) {
+      // File共有に対応していない環境ではダウンロードにフォールバックする
+    }
+
+    var url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  // ---------- バックアップの読み込み ----------
+
+  function onImportFileSelected(e) {
+    var file = e.target.files && e.target.files[0];
+    els.importFileInput.value = ''; // 同じファイルを続けて選び直せるようにする
+    if (!file) return;
+
+    var reader = new FileReader();
+    reader.onload = function () {
+      var data;
+      try {
+        data = JSON.parse(reader.result);
+      } catch (err) {
+        alert('ファイルを読み込めませんでした。正しいバックアップファイルか確認してください。');
+        return;
+      }
+      importPlaces(data);
+    };
+    reader.onerror = function () {
+      alert('ファイルの読み込みに失敗しました。');
+    };
+    reader.readAsText(file);
+  }
+
+  function isValidImportedPlace(p) {
+    return !!(p && typeof p === 'object' &&
+      typeof p.name === 'string' && p.name.trim() &&
+      typeof p.lat === 'number' && typeof p.lng === 'number');
+  }
+
+  // 既に同じIDの行き先が登録済みの場合はスキップし、それ以外は追加する
+  // （自分のバックアップの再読み込みでは重複せず、他の人からの共有では追加される）
+  function importPlaces(data) {
+    if (!Array.isArray(data)) {
+      alert('ファイルを読み込めませんでした。正しいバックアップファイルか確認してください。');
+      return;
+    }
+
+    var existingIds = {};
+    places.forEach(function (p) { existingIds[p.id] = true; });
+
+    var added = 0;
+    var skipped = 0;
+
+    data.forEach(function (item) {
+      if (!isValidImportedPlace(item)) {
+        skipped++;
+        return;
+      }
+      if (item.id && existingIds[item.id]) {
+        skipped++;
+        return;
+      }
+
+      var id = (typeof item.id === 'string' && item.id)
+        ? item.id
+        : Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+      places.push({
+        id: id,
+        name: item.name,
+        address: typeof item.address === 'string' ? item.address : '',
+        lat: item.lat,
+        lng: item.lng,
+        startDate: typeof item.startDate === 'string' ? item.startDate : '',
+        endDate: typeof item.endDate === 'string' ? item.endDate : '',
+        memo: typeof item.memo === 'string' ? item.memo : '',
+        url: typeof item.url === 'string' ? item.url : '',
+      });
+      existingIds[id] = true;
+      added++;
+    });
+
+    if (added > 0) {
+      savePlaces(places);
+    }
+    renderList();
+
+    var message = added + '件を追加しました。';
+    if (skipped > 0) {
+      message += '（' + skipped + '件は無効なデータ、または登録済みのためスキップしました）';
+    }
+    alert(message);
   }
 
   // ---------- 検索・並び替え ----------

@@ -98,8 +98,16 @@
     els.pageTitle.textContent = '行き先を編集';
     document.title = '行き先を編集 | 行きたい場所マップ';
     els.saveBtn.textContent = getSaveLabel();
-    // 編集画面からの「戻る」は、遷移元の詳細画面に戻れるようにする
-    els.backBtn.href = 'detail.html?id=' + encodeURIComponent(place.id);
+
+    // 編集画面からの「戻る」は詳細画面に戻す。history.pushState ではなく replace を使うことで、
+    // 「詳細→編集→詳細」という往復が履歴に余計な1件として残らないようにする
+    // （残ると、詳細画面で戻るボタンを押したときに編集画面へ戻ってしまう）。
+    var backUrl = 'detail.html?id=' + encodeURIComponent(place.id);
+    els.backBtn.href = backUrl;
+    els.backBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      window.location.replace(backUrl);
+    });
 
     els.name.value = place.name || '';
     els.address.value = place.address || '';
@@ -292,8 +300,8 @@
       }
       savePlaces(places);
 
-      // 更新後は詳細画面に戻る
-      window.location.href = 'detail.html?id=' + encodeURIComponent(editingId);
+      // 更新後は詳細画面に戻る（replace により編集画面を履歴に残さない。理由は enterEditMode 内のコメント参照）
+      window.location.replace('detail.html?id=' + encodeURIComponent(editingId));
       return;
     }
 

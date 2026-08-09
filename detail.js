@@ -105,6 +105,12 @@
     editLink.className = 'focus-btn';
     editLink.href = 'add.html?id=' + encodeURIComponent(place.id);
     editLink.textContent = '編集';
+    // push ではなく replace で遷移する。詳細→編集→（保存/戻る）→詳細 という往復のたびに
+    // 履歴が積み上がるのを防ぎ、詳細画面の「戻る」で編集画面に戻ってしまうのを防ぐ。
+    editLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      window.location.replace(editLink.href);
+    });
     actions.appendChild(editLink);
 
     var delBtn = document.createElement('button');

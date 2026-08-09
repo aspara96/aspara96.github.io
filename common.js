@@ -101,6 +101,23 @@ function getPinColorClass(place, referenceDate) {
   return 'marker-blue';
 }
 
+// 行き先の並び替え（一覧画面・地図画面下部リストで共通）
+// 1. 終了日の昇順（未設定は下） 2. 開始日の昇順（未設定は下）
+function comparePlaces(a, b) {
+  var byEnd = compareDateAscEmptyLast(a.endDate, b.endDate);
+  if (byEnd !== 0) return byEnd;
+  return compareDateAscEmptyLast(a.startDate, b.startDate);
+}
+
+function compareDateAscEmptyLast(dateA, dateB) {
+  var hasA = !!dateA;
+  var hasB = !!dateB;
+  if (hasA && hasB) return dateA < dateB ? -1 : (dateA > dateB ? 1 : 0);
+  if (hasA && !hasB) return -1; // 設定されている方が先
+  if (!hasA && hasB) return 1;
+  return 0; // どちらも未設定
+}
+
 // ---------- 地図ピン ----------
 
 // 保存済みの場所用ピン（涙型）。colorClass には getPinColorClass() の戻り値を渡す。

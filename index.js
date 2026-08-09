@@ -179,7 +179,7 @@
     if (places.length === 0) {
       var noneLi = document.createElement('li');
       noneLi.className = 'empty-state';
-      noneLi.textContent = 'まだ場所が保存されていません。右下の + から追加できます';
+      noneLi.textContent = 'まだ場所が保存されていません。右下の + から追加できます。';
       els.placeList.appendChild(noneLi);
       return;
     }
@@ -187,7 +187,7 @@
     if (visiblePlaces.length === 0) {
       var emptyLi = document.createElement('li');
       emptyLi.className = 'empty-state';
-      emptyLi.textContent = 'この範囲に表示できる場所がありません。地図を動かすか、期間の指定を見直してください';
+      emptyLi.textContent = 'この範囲に表示できる場所がありません。地図を動かすか、期間の指定を見直してください。';
       els.placeList.appendChild(emptyLi);
       return;
     }
@@ -213,10 +213,20 @@
         }
       });
 
+      var infoEl = document.createElement('div');
+      infoEl.className = 'place-info';
+
       var nameEl = document.createElement('span');
       nameEl.className = 'place-name';
       nameEl.textContent = p.name;
-      li.appendChild(nameEl);
+      infoEl.appendChild(nameEl);
+
+      var periodEl = document.createElement('span');
+      periodEl.className = 'place-period';
+      periodEl.textContent = formatPeriodLabel(p);
+      infoEl.appendChild(periodEl);
+
+      li.appendChild(infoEl);
 
       var actions = document.createElement('div');
       actions.className = 'place-actions';

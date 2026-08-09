@@ -64,7 +64,7 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: calc(14px + var(--safe-top)) 18px 14px;
+  padding: calc(8px + var(--safe-top)) 18px 8px;
   background: var(--color-ink);
   border-bottom: 3px solid var(--color-gold);
   position: sticky;
@@ -83,8 +83,7 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 }
 .header-icon { font-size: 16px; }
 
-/* 地図画面のヘッダーのみ：タイトルと説明文を横並びにし、縦幅を最小限にする */
-.index-header { padding: calc(8px + var(--safe-top)) 18px 8px; }
+/* 地図画面のヘッダーのみ：タイトルと説明文を横並びにする（縦幅は共通の app-header に統一済み） */
 .header-text { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .header-subtitle {
   margin: 0;
@@ -435,15 +434,16 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 .search-row button {
   padding: 0 16px;
   border: none;
-  background: var(--color-ink);
-  color: #fff;
-  border-radius: var(--radius-md);
+  background: var(--color-gold);
+  color: var(--color-ink);
+  border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 700;
   white-space: nowrap;
   min-height: 44px;
 }
-.search-row button:active { background: var(--color-ink-light); }
+.search-row button:active { background: var(--color-gold-dark); }
 
 .search-results {
   list-style: none;

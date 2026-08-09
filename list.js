@@ -180,22 +180,6 @@
     });
   }
 
-  // 1. 終了日の昇順（未設定は下） 2. 開始日の昇順（未設定は下）
-  function comparePlaces(a, b) {
-    var byEnd = compareDateAscEmptyLast(a.endDate, b.endDate);
-    if (byEnd !== 0) return byEnd;
-    return compareDateAscEmptyLast(a.startDate, b.startDate);
-  }
-
-  function compareDateAscEmptyLast(dateA, dateB) {
-    var hasA = !!dateA;
-    var hasB = !!dateB;
-    if (hasA && hasB) return dateA < dateB ? -1 : (dateA > dateB ? 1 : 0);
-    if (hasA && !hasB) return -1; // 設定されている方が先
-    if (!hasA && hasB) return 1;
-    return 0; // どちらも未設定
-  }
-
   function deletePlace(id) {
     places = places.filter(function (p) { return p.id !== id; });
     savePlaces(places);

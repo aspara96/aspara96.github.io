@@ -101,6 +101,12 @@
     mapLink.textContent = '地図で見る';
     actions.appendChild(mapLink);
 
+    var editLink = document.createElement('a');
+    editLink.className = 'focus-btn';
+    editLink.href = 'add.html?id=' + encodeURIComponent(place.id);
+    editLink.textContent = '編集';
+    actions.appendChild(editLink);
+
     var delBtn = document.createElement('button');
     delBtn.type = 'button';
     delBtn.className = 'delete-btn';

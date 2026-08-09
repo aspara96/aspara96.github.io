@@ -1,5 +1,9 @@
 // add.js
-// 追加画面（add.html）専用の処理です。
+// 行き先の登録・編集画面（add.html）専用の処理です。
+// URLに ?id={id} が付いている場合は「編集モード」として動作し、既存の行き先を
+// 上書き保存します（詳細画面の「編集」ボタンから遷移してくる想定）。
+// パラメータがない場合は通常の「新規登録モード」です。
+//
 // 場所の指定は「住所」欄への入力を正としつつ、検索結果の選択や地図タップでも
 // 住所欄を自動入力できるようにしています。
 // 住所からの座標検索には common.js の addressSearch（国土地理院→Nominatimの順で検索）を
@@ -15,8 +19,13 @@
   var map = null;
   var marker = null;
 
+  var isEditMode = false;
+  var editingId = null;
+
   var els = {
     form: document.getElementById('placeForm'),
+    pageTitle: document.getElementById('pageTitle'),
+    backBtn: document.getElementById('backBtn'),
     name: document.getElementById('placeName'),
     address: document.getElementById('placeAddress'),
     url: document.getElementById('placeUrl'),
@@ -34,6 +43,16 @@
     // 期間は任意項目のため、初期値は空欄のままにする
     initMap();
     bindEvents();
+
+    var params = new URLSearchParams(window.location.search);
+    var id = params.get('id');
+    if (id) {
+      var place = loadPlaces().find(function (p) { return p.id === id; });
+      if (place) {
+        enterEditMode(place);
+      }
+    }
+
     updateSaveButtonState();
   }
 
@@ -68,6 +87,35 @@
 
     // 住所欄から離れたタイミングで、検索結果を選ばなくても自動的にピンを立てる
     els.address.addEventListener('blur', onAddressBlur);
+  }
+
+  // ---------- 編集モードへの切り替え ----------
+
+  function enterEditMode(place) {
+    isEditMode = true;
+    editingId = place.id;
+
+    els.pageTitle.textContent = '行き先を編集';
+    document.title = '行き先を編集 | 行きたい場所マップ';
+    els.saveBtn.textContent = getSaveLabel();
+    // 編集画面からの「戻る」は、遷移元の詳細画面に戻れるようにする
+    els.backBtn.href = 'detail.html?id=' + encodeURIComponent(place.id);
+
+    els.name.value = place.name || '';
+    els.address.value = place.address || '';
+    els.url.value = place.url || '';
+    els.startDate.value = place.startDate || '';
+    els.endDate.value = place.endDate || '';
+    els.memo.value = place.memo || '';
+
+    // 既存の座標はそのまま確定済みとして扱う（住所欄を編集しない限り再検索しない）
+    confirmedLocation = { lat: place.lat, lng: place.lng };
+    placeMarkerAt(place.lat, place.lng);
+    map.setView([place.lat, place.lng], 15);
+  }
+
+  function getSaveLabel() {
+    return isEditMode ? '更新' : '登録';
   }
 
   function updateSaveButtonState() {
@@ -213,13 +261,43 @@
       })
       .catch(function () {
         els.saveBtn.disabled = false;
-        els.saveBtn.textContent = 'この場所を保存';
+        els.saveBtn.textContent = getSaveLabel();
         alert('入力された住所から場所を特定できませんでした。住所を見直すか、検索結果の選択・地図タップをお試しください。');
       });
   }
 
   function finishSave(name, address, lat, lng, startDate, endDate, url) {
-    var place = {
+    var memo = els.memo.value.trim();
+    var places = loadPlaces();
+
+    if (isEditMode) {
+      var idx = places.findIndex(function (p) { return p.id === editingId; });
+      var updatedPlace = {
+        id: editingId,
+        name: name,
+        address: address,
+        lat: lat,
+        lng: lng,
+        startDate: startDate, // 空文字の場合あり
+        endDate: endDate,     // 空文字の場合あり
+        memo: memo,
+        url: url,
+      };
+
+      if (idx !== -1) {
+        places[idx] = updatedPlace;
+      } else {
+        // 万一元のデータが見つからない場合（他タブで削除された等）は新規として追加する
+        places.push(updatedPlace);
+      }
+      savePlaces(places);
+
+      // 更新後は詳細画面に戻る
+      window.location.href = 'detail.html?id=' + encodeURIComponent(editingId);
+      return;
+    }
+
+    places.push({
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
       name: name,
       address: address,
@@ -227,15 +305,12 @@
       lng: lng,
       startDate: startDate, // 空文字の場合あり
       endDate: endDate,     // 空文字の場合あり
-      memo: els.memo.value.trim(),
+      memo: memo,
       url: url,
-    };
-
-    var places = loadPlaces();
-    places.push(place);
+    });
     savePlaces(places);
 
-    // 保存後は一覧画面に戻る
+    // 新規登録後は一覧画面に戻る
     window.location.href = 'index.html';
   }
 })();

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1d2b3a">
-<title>場所を追加 | 行きたい場所マップ</title>
+<title>行き先を登録 | 行きたい場所マップ</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,26 +18,26 @@
 
     <header class="app-header add-header">
       <a href="index.html" class="back-btn" aria-label="地図に戻る">&#8592;</a>
-      <h1>場所を追加</h1>
+      <h1>行き先を登録</h1>
     </header>
 
     <main class="main-content add-content">
       <div id="map" class="map map-small"></div>
-      <p class="hint">地図を直接タップすると、その場所の住所が自動入力されます</p>
+      <p class="hint">地図を直接タップすると、その場所の住所が自動入力されます。</p>
 
       <form id="placeForm" class="add-form">
-        <label for="placeName">場所の名前
+        <label for="placeName">登録名
           <input type="text" id="placeName" required placeholder="例: 京都 清水寺">
         </label>
 
-        <label for="placeAddress">住所
+        <label for="placeAddress">住所・地名
           <div class="search-row">
             <input type="text" id="placeAddress" required placeholder="例: 京都府京都市東山区清水1丁目294">
             <button type="button" id="searchBtn">検索</button>
           </div>
         </label>
         <ul id="searchResults" class="search-results"></ul>
-        <p class="hint">住所を入力すると自動的に地図にピンが立ちます。地名などで検索して候補から選ぶこともできます</p>
+        <p class="hint">住所を入力すると自動的に地図にピンが立ちます。地名などで検索して候補から選ぶこともできます。</p>
 
         <label for="placeUrl">参考URL（任意）
           <input type="url" id="placeUrl" placeholder="https://...">
@@ -51,13 +51,13 @@
             <input type="date" id="endDate">
           </label>
         </div>
-        <p class="hint">開始日・終了日はどちらか一方だけの入力もできます。両方空欄の場合は「期限なし」として常に地図に表示されます。開始日のみの場合はその日以降、終了日のみの場合はその日以前が表示対象になります。</p>
+        <p class="hint">開始日・終了日はどちらか一方だけの入力もできます。</p>
 
         <label for="placeMemo">メモ（任意）
           <textarea id="placeMemo" rows="3" placeholder="行きたい理由など"></textarea>
         </label>
 
-        <button type="submit" id="saveBtn" disabled>この場所を保存</button>
+        <button type="submit" id="saveBtn" disabled>登録</button>
       </form>
     </main>
   </div>

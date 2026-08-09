@@ -172,6 +172,11 @@ function reverseGeocode(lat, lng) {
   });
 }
 
+// 緯度経度からGoogleマップでその地点を開くためのURLを作る（詳細画面の住所リンクに使用）
+function buildGoogleMapsUrl(lat, lng) {
+  return 'https://www.google.com/maps/search/?api=1&query=' + lat + ',' + lng;
+}
+
 function showSearchLoading(resultsEl) {
   resultsEl.innerHTML = '';
   var li = document.createElement('li');

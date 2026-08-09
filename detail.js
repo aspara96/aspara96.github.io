@@ -81,7 +81,7 @@
     card.appendChild(periodEl);
 
     if (place.address) {
-      card.appendChild(buildTextRow('住所', place.address));
+      card.appendChild(buildLinkRow('住所', buildGoogleMapsUrl(place.lat, place.lng), place.address));
     }
 
     if (place.memo) {
@@ -135,7 +135,7 @@
     return row;
   }
 
-  function buildLinkRow(label, url) {
+  function buildLinkRow(label, url, displayText) {
     var row = document.createElement('div');
     row.className = 'detail-row';
 
@@ -151,7 +151,7 @@
     a.href = url;
     a.target = '_blank';
     a.rel = 'noopener noreferrer';
-    a.textContent = url;
+    a.textContent = displayText || url;
     valueEl.appendChild(a);
 
     row.appendChild(valueEl);

@@ -335,6 +335,27 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   padding: 24px 0;
 }
 
+/* ---------- バックアップ・共有（登録場所一覧画面） ---------- */
+
+.data-actions-section { padding: 4px 16px 16px; }
+.data-actions-section h2 { font-size: 16px; color: var(--color-ink); margin-bottom: 6px; }
+.data-actions-section .hint { margin: 0 0 12px; }
+
+.data-actions { display: flex; gap: 10px; margin-bottom: 14px; }
+.data-action-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-gold);
+  color: var(--color-ink);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  min-height: 42px;
+}
+.data-action-btn:active { background: var(--color-gold-dark); }
+
 .clear-all-btn {
   width: 100%;
   padding: 10px;

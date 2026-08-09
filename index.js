@@ -192,9 +192,7 @@
       return;
     }
 
-    var sorted = visiblePlaces.slice().sort(function (a, b) {
-      return a.startDate.localeCompare(b.startDate);
-    });
+    var sorted = visiblePlaces.slice().sort(comparePlaces);
 
     sorted.forEach(function (p) {
       var li = document.createElement('li');

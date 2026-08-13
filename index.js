@@ -13,6 +13,7 @@
   var els = {
     mapSearchQuery: document.getElementById('mapSearchQuery'),
     mapSearchBtn: document.getElementById('mapSearchBtn'),
+    mapSearchClearBtn: document.getElementById('mapSearchClearBtn'),
     mapSearchResults: document.getElementById('mapSearchResults'),
     viewDate: document.getElementById('viewDate'),
     todayBtn: document.getElementById('todayBtn'),
@@ -27,6 +28,7 @@
   function init() {
     initMap();
     bindEvents();
+    updateMapSearchClearVisibility();
     refreshMarkersForDateFilter();
     handleFocusParam();
   }
@@ -53,6 +55,14 @@
         onMapSearch();
       }
     });
+    els.mapSearchQuery.addEventListener('input', updateMapSearchClearVisibility);
+
+    els.mapSearchClearBtn.addEventListener('click', function () {
+      els.mapSearchQuery.value = '';
+      els.mapSearchResults.innerHTML = ''; // 検索結果も閉じる
+      updateMapSearchClearVisibility();
+      els.mapSearchQuery.focus();
+    });
 
     els.viewDate.addEventListener('change', refreshMarkersForDateFilter);
 
@@ -78,6 +88,10 @@
 
   // ---------- 地図上を移動するための検索（場所の登録は行わない） ----------
 
+  function updateMapSearchClearVisibility() {
+    els.mapSearchClearBtn.hidden = !els.mapSearchQuery.value;
+  }
+
   function onMapSearch() {
     var q = els.mapSearchQuery.value.trim();
     if (!q) return;
@@ -91,6 +105,7 @@
           var lng = parseFloat(r.lon);
           els.mapSearchResults.innerHTML = '';
           els.mapSearchQuery.value = r.display_name.split(',')[0];
+          updateMapSearchClearVisibility();
           map.setView([lat, lng], 15); // moveend 経由で下部リストも更新される
         });
       })

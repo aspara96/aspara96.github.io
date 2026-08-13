@@ -160,7 +160,7 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   color: var(--color-text);
 }
 
-.filter-row button {
+.filter-row button:not(.input-clear-btn) {
   padding: 0 14px;
   border: none;
   background: var(--color-gold);
@@ -173,7 +173,7 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   min-height: 34px;
   flex-shrink: 0;
 }
-.filter-row button:active { background: var(--color-gold-dark); }
+.filter-row button:not(.input-clear-btn):active { background: var(--color-gold-dark); }
 
 /* フィルターバーの直下に出る地名検索の候補一覧 */
 #mapSearchResults { margin: 6px 16px 0; }
@@ -491,7 +491,7 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 
 .search-row { display: flex; gap: 8px; }
 .search-row input { flex: 1; min-width: 0; }
-.search-row button {
+.search-row button:not(.input-clear-btn) {
   padding: 0 16px;
   border: none;
   background: var(--color-gold);
@@ -503,7 +503,7 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   white-space: nowrap;
   min-height: 34px;
 }
-.search-row button:active { background: var(--color-gold-dark); }
+.search-row button:not(.input-clear-btn):active { background: var(--color-gold-dark); }
 
 .search-results {
   list-style: none;

@@ -247,7 +247,7 @@
       var focusBtn = document.createElement('button');
       focusBtn.type = 'button';
       focusBtn.className = 'focus-btn';
-      focusBtn.textContent = '地図で見る';
+      focusBtn.textContent = '地図';
       focusBtn.addEventListener('click', function (e) {
         e.stopPropagation();
         map.setView([p.lat, p.lng], 15);

@@ -222,7 +222,8 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 }
 .map-list-btn:active { background: var(--color-gold-dark); }
 
-/* 検索欄の「×」クリアボタン（地図画面の場所検索・一覧画面の検索で使用） */
+/* 検索欄の「×」クリアボタン（地図画面の場所検索・一覧画面の検索・追加画面の住所欄で使用）
+   他の金色ボタンとは異なり、入力欄になじむよう控えめな塗りつぶし円のデザインにしている */
 .input-clear-wrap {
   position: relative;
   flex: 1;
@@ -234,35 +235,38 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 
 .input-clear-btn {
   position: absolute;
-  right: 3px;
+  right: 6px;
   top: 50%;
   transform: translateY(-50%);
-  width: 26px;
-  height: 26px;
+  width: 20px;
+  height: 20px;
   padding: 0;
   border: none;
-  background: none;
-  color: var(--color-text-muted);
-  font-size: 18px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+  color: var(--color-surface);
+  font-size: 13px;
   line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  opacity: 0.55;
 }
-.input-clear-btn:active { background: var(--color-line); color: var(--color-ink); }
+.input-clear-btn:active { opacity: 0.9; }
 
 #mapSearchQuery,
-#placeSearchQuery {
-  padding-right: 32px;
+#placeSearchQuery,
+#placeAddress {
+  padding-right: 30px;
 }
 
 /* 登録場所一覧画面の検索ボックス */
 .list-search { padding: 16px 16px 0; }
 .list-search input[type="text"] {
   width: 100%;
-  padding: 11px 12px;
+  height: 34px;
+  padding: 0 12px;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-md);
   background: var(--color-surface);

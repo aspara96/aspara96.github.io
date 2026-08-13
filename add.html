@@ -32,7 +32,10 @@
 
         <label for="placeAddress">住所・地名
           <div class="search-row">
-            <input type="text" id="placeAddress" required placeholder="例: 京都府京都市東山区清水1丁目294">
+            <div class="input-clear-wrap">
+              <input type="text" id="placeAddress" required placeholder="例: 京都府京都市東山区清水1丁目294">
+              <button type="button" id="addressClearBtn" class="input-clear-btn" aria-label="住所を消去" hidden>&times;</button>
+            </div>
             <button type="button" id="searchBtn">検索</button>
           </div>
         </label>

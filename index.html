@@ -33,7 +33,10 @@
         </div>
         <div class="filter-row">
           <span class="filter-label">場所</span>
-          <input type="text" id="mapSearchQuery" placeholder="例: 東京タワー">
+          <div class="input-clear-wrap">
+            <input type="text" id="mapSearchQuery" placeholder="例: 東京タワー">
+            <button type="button" id="mapSearchClearBtn" class="input-clear-btn" aria-label="入力内容を消去" hidden>&times;</button>
+          </div>
           <button type="button" id="mapSearchBtn">検索</button>
         </div>
       </div>

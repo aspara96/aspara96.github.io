@@ -265,7 +265,7 @@
       var viewBtn = document.createElement('a');
       viewBtn.className = 'focus-btn';
       viewBtn.href = 'index.html?focus=' + encodeURIComponent(p.id);
-      viewBtn.textContent = '地図で見る';
+      viewBtn.textContent = '地図';
       viewBtn.addEventListener('click', function (e) { e.stopPropagation(); });
       actions.appendChild(viewBtn);
 

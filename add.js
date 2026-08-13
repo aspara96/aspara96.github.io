@@ -28,6 +28,7 @@
     backBtn: document.getElementById('backBtn'),
     name: document.getElementById('placeName'),
     address: document.getElementById('placeAddress'),
+    addressClearBtn: document.getElementById('addressClearBtn'),
     url: document.getElementById('placeUrl'),
     searchBtn: document.getElementById('searchBtn'),
     searchResults: document.getElementById('searchResults'),
@@ -54,6 +55,7 @@
     }
 
     updateSaveButtonState();
+    updateAddressClearVisibility();
   }
 
   function initMap() {
@@ -83,10 +85,28 @@
     els.address.addEventListener('input', function () {
       confirmedLocation = null;
       updateSaveButtonState();
+      updateAddressClearVisibility();
     });
 
     // 住所欄から離れたタイミングで、検索結果を選ばなくても自動的にピンを立てる
     els.address.addEventListener('blur', onAddressBlur);
+
+    els.addressClearBtn.addEventListener('click', function () {
+      els.address.value = '';
+      confirmedLocation = null;
+      els.searchResults.innerHTML = '';
+      if (marker) {
+        map.removeLayer(marker);
+        marker = null;
+      }
+      updateSaveButtonState();
+      updateAddressClearVisibility();
+      els.address.focus();
+    });
+  }
+
+  function updateAddressClearVisibility() {
+    els.addressClearBtn.hidden = !els.address.value;
   }
 
   // ---------- 編集モードへの切り替え ----------
@@ -115,6 +135,7 @@
     els.startDate.value = place.startDate || '';
     els.endDate.value = place.endDate || '';
     els.memo.value = place.memo || '';
+    updateAddressClearVisibility();
 
     // 既存の座標はそのまま確定済みとして扱う（住所欄を編集しない限り再検索しない）
     confirmedLocation = { lat: place.lat, lng: place.lng };
@@ -183,6 +204,7 @@
         var address = data && data.display_name ? data.display_name : '';
         if (address) {
           els.address.value = address; // .value での設定なので input イベントは発火しない
+          updateAddressClearVisibility();
           if (!els.name.value) {
             els.name.value = address.split(',')[0];
           }
@@ -210,6 +232,7 @@
           var lng = parseFloat(r.lon);
 
           els.address.value = r.display_name; // .value での設定なので input イベントは発火しない
+          updateAddressClearVisibility();
           confirmedLocation = { lat: lat, lng: lng };
           updateSaveButtonState();
 

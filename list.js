@@ -10,6 +10,7 @@
 
   var els = {
     searchQuery: document.getElementById('placeSearchQuery'),
+    searchClearBtn: document.getElementById('placeSearchClearBtn'),
     placeList: document.getElementById('placeList'),
     placeCount: document.getElementById('placeCount'),
     exportBtn: document.getElementById('exportBtn'),
@@ -22,11 +23,22 @@
 
   function init() {
     bindEvents();
+    updateSearchClearVisibility();
     renderList();
   }
 
   function bindEvents() {
-    els.searchQuery.addEventListener('input', renderList);
+    els.searchQuery.addEventListener('input', function () {
+      updateSearchClearVisibility();
+      renderList();
+    });
+
+    els.searchClearBtn.addEventListener('click', function () {
+      els.searchQuery.value = '';
+      updateSearchClearVisibility();
+      renderList();
+      els.searchQuery.focus();
+    });
 
     els.exportBtn.addEventListener('click', onExport);
     els.importBtn.addEventListener('click', function () {
@@ -168,6 +180,10 @@
   }
 
   // ---------- 検索・並び替え ----------
+
+  function updateSearchClearVisibility() {
+    els.searchClearBtn.hidden = !els.searchQuery.value;
+  }
 
   // 名前・住所・メモを対象に大文字小文字を区別せず部分一致で絞り込む
   function getFilteredPlaces() {

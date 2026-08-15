@@ -80,6 +80,13 @@
     periodEl.textContent = formatPeriodLabel(place);
     card.appendChild(periodEl);
 
+    if (place.categoryId) {
+      var category = findCategoryById(loadCategories(), place.categoryId);
+      if (category) {
+        card.appendChild(buildTextRow('カテゴリー', category.icon + ' ' + category.name));
+      }
+    }
+
     if (place.address) {
       card.appendChild(buildLinkRow('住所', buildGoogleMapsUrl(place.lat, place.lng), place.address));
     }

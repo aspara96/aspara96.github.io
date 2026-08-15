@@ -1,10 +1,11 @@
 // common.js
-// index.html / add.html / list.html / detail.html すべてから読み込む共通処理です。
+// index.html / add.html / list.html / detail.html / categories.html すべてから読み込む共通処理です。
 // 保存データの読み書き、日付・期間の判定、地図ピンのアイコン生成、地名検索(Nominatim)などをまとめています。
 
 var STORAGE_KEY = 'ikitai_places_v1';
+var CATEGORIES_STORAGE_KEY = 'ikitai_categories_v1';
 
-// ---------- 保存データ ----------
+// ---------- 保存データ（行き先） ----------
 
 function loadPlaces() {
   try {
@@ -24,6 +25,37 @@ function savePlaces(places) {
     console.error('保存エラー', e);
     return false;
   }
+}
+
+// ---------- 保存データ（カテゴリー） ----------
+// カテゴリーは { id, icon, name } の配列。行き先(Place)側は categoryId でこれを参照する。
+
+function loadCategories() {
+  try {
+    var raw = localStorage.getItem(CATEGORIES_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.error('読み込みエラー', e);
+    return [];
+  }
+}
+
+function saveCategories(categories) {
+  try {
+    localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(categories));
+    return true;
+  } catch (e) {
+    console.error('保存エラー', e);
+    return false;
+  }
+}
+
+function findCategoryById(categories, id) {
+  if (!id) return null;
+  for (var i = 0; i < categories.length; i++) {
+    if (categories[i].id === id) return categories[i];
+  }
+  return null;
 }
 
 // ---------- 日付 ----------

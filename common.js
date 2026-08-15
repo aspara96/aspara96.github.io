@@ -263,3 +263,50 @@ function renderSearchResultsList(resultsEl, results, onSelect) {
     resultsEl.appendChild(li);
   });
 }
+
+// ---------- ナビゲーションメニュー（全画面共通のハンバーガーメニュー） ----------
+// #navMenuBtn / #navMenu が存在するページでのみ動作する。各ページのJSを個別に
+// 変更しなくて済むよう、common.js の読み込み時に自動的に初期化される。
+(function () {
+  function initNavMenu() {
+    var btn = document.getElementById('navMenuBtn');
+    var menu = document.getElementById('navMenu');
+    if (!btn || !menu) return;
+
+    // 現在のページに対応するリンクを強調表示する
+    var currentPage = window.location.pathname.split('/').pop();
+    if (!currentPage) currentPage = 'index.html';
+    var links = menu.querySelectorAll('a');
+    for (var i = 0; i < links.length; i++) {
+      if (links[i].getAttribute('href') === currentPage) {
+        links[i].classList.add('current-page');
+      }
+    }
+
+    function closeMenu() {
+      menu.hidden = true;
+      btn.setAttribute('aria-expanded', 'false');
+    }
+
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var willOpen = menu.hidden;
+      menu.hidden = !willOpen;
+      btn.setAttribute('aria-expanded', String(willOpen));
+    });
+
+    // メニューの外側をタップしたら閉じる
+    document.addEventListener('click', function (e) {
+      if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) {
+        closeMenu();
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNavMenu);
+  } else {
+    initNavMenu();
+  }
+})();
+

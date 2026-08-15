@@ -30,6 +30,7 @@
     address: document.getElementById('placeAddress'),
     addressClearBtn: document.getElementById('addressClearBtn'),
     url: document.getElementById('placeUrl'),
+    category: document.getElementById('placeCategory'),
     searchBtn: document.getElementById('searchBtn'),
     searchResults: document.getElementById('searchResults'),
     startDate: document.getElementById('startDate'),
@@ -44,6 +45,7 @@
     // 期間は任意項目のため、初期値は空欄のままにする
     initMap();
     bindEvents();
+    populateCategoryOptions();
 
     var params = new URLSearchParams(window.location.search);
     var id = params.get('id');
@@ -56,6 +58,17 @@
 
     updateSaveButtonState();
     updateAddressClearVisibility();
+  }
+
+  // カテゴリー一覧を選択肢として反映する（未作成なら「選択しない」のみ）
+  function populateCategoryOptions() {
+    var categories = loadCategories();
+    categories.forEach(function (c) {
+      var option = document.createElement('option');
+      option.value = c.id;
+      option.textContent = c.icon + ' ' + c.name;
+      els.category.appendChild(option);
+    });
   }
 
   function initMap() {
@@ -132,6 +145,7 @@
     els.name.value = place.name || '';
     els.address.value = place.address || '';
     els.url.value = place.url || '';
+    els.category.value = place.categoryId || '';
     els.startDate.value = place.startDate || '';
     els.endDate.value = place.endDate || '';
     els.memo.value = place.memo || '';
@@ -276,9 +290,11 @@
       url = 'https://' + url;
     }
 
+    var categoryId = els.category.value;
+
     if (confirmedLocation) {
       // 検索選択・地図タップ・住所の自動解決済みで、住所欄も編集されていない → その座標をそのまま使う
-      finishSave(name, address, confirmedLocation.lat, confirmedLocation.lng, startDate, endDate, url);
+      finishSave(name, address, confirmedLocation.lat, confirmedLocation.lng, startDate, endDate, url, categoryId);
       return;
     }
 
@@ -288,7 +304,7 @@
 
     resolveAddressLocation(address)
       .then(function (loc) {
-        finishSave(name, address, loc.lat, loc.lng, startDate, endDate, url);
+        finishSave(name, address, loc.lat, loc.lng, startDate, endDate, url, categoryId);
       })
       .catch(function () {
         els.saveBtn.disabled = false;
@@ -297,7 +313,7 @@
       });
   }
 
-  function finishSave(name, address, lat, lng, startDate, endDate, url) {
+  function finishSave(name, address, lat, lng, startDate, endDate, url, categoryId) {
     var memo = els.memo.value.trim();
     var places = loadPlaces();
 
@@ -313,6 +329,7 @@
         endDate: endDate,     // 空文字の場合あり
         memo: memo,
         url: url,
+        categoryId: categoryId, // 空文字の場合あり（未選択）
       };
 
       if (idx !== -1) {
@@ -338,6 +355,7 @@
       endDate: endDate,     // 空文字の場合あり
       memo: memo,
       url: url,
+      categoryId: categoryId, // 空文字の場合あり（未選択）
     });
     savePlaces(places);
 

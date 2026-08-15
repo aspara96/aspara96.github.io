@@ -156,6 +156,7 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   z-index: 50;
   min-width: 168px;
 }
+.nav-menu[hidden] { display: none; }
 .nav-menu a {
   display: block;
   padding: 10px 12px;

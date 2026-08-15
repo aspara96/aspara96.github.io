@@ -121,6 +121,53 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 }
 .back-btn:active { background: rgba(192, 138, 46, 0.18); }
 
+/* ---------- ハンバーガーメニュー（全画面共通） ---------- */
+
+.nav-menu-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: none;
+  color: var(--color-gold);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.nav-menu-btn:active { background: rgba(192, 138, 46, 0.18); }
+
+.nav-menu {
+  position: absolute;
+  top: 100%;
+  right: 18px;
+  margin-top: 6px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 50;
+  min-width: 168px;
+}
+.nav-menu a {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--color-ink);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+.nav-menu a:active { background: var(--color-paper); }
+.nav-menu a.current-page { color: var(--color-teal); font-weight: 700; }
+
 /* ---------- 日付・場所フィルター（地図画面上部） ---------- */
 /* 「日付」「場所」の2行を1枚のカードにまとめ、縦幅を抑えたコンパクトな見た目にする */
 

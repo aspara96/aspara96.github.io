@@ -29,7 +29,7 @@
     initMap();
     bindEvents();
     updateMapSearchClearVisibility();
-    refreshMarkersForDateFilter();
+    refreshMarkersForDateFilter(true); // 初回表示時のみ、全ピンが収まるように表示範囲を合わせる
     handleFocusParam();
   }
 
@@ -64,16 +64,19 @@
       els.mapSearchQuery.focus();
     });
 
-    els.viewDate.addEventListener('change', refreshMarkersForDateFilter);
+    // 日付の変更では、現在の地図の表示範囲（パン・ズーム）を維持する
+    els.viewDate.addEventListener('change', function () {
+      refreshMarkersForDateFilter(false);
+    });
 
     els.todayBtn.addEventListener('click', function () {
       els.viewDate.value = formatDate(new Date());
-      refreshMarkersForDateFilter();
+      refreshMarkersForDateFilter(false);
     });
 
     els.clearDateBtn.addEventListener('click', function () {
       els.viewDate.value = '';
-      refreshMarkersForDateFilter();
+      refreshMarkersForDateFilter(false);
     });
 
     els.clearAllBtn.addEventListener('click', function () {
@@ -81,7 +84,7 @@
       if (confirm('保存されている場所を全て削除します。よろしいですか？')) {
         places = [];
         savePlaces(places);
-        refreshMarkersForDateFilter();
+        refreshMarkersForDateFilter(true);
       }
     });
   }
@@ -128,7 +131,9 @@
   // 期間の条件に合わせてピンを張り直す（日付変更・今日・すべて・追加・削除のたびに呼ぶ）
   // 期限が設定されていない場所や、開始日/終了日の片方のみ設定された場所も isActiveOn の
   // ルールに従って表示・非表示が決まる。
-  function refreshMarkersForDateFilter() {
+  // fitBoundsToResults に true を渡した場合のみ、表示範囲をピンに合わせて調整する
+  // （初回表示時のみ true にし、日付の変更時は現在の表示範囲を維持する）。
+  function refreshMarkersForDateFilter(fitBoundsToResults) {
     var viewDate = getViewDate();
     var referenceDate = getReferenceDate();
 
@@ -143,7 +148,7 @@
       marker.bindPopup(buildPopupContent(p));
     });
 
-    if (dateFilteredPlaces.length > 0) {
+    if (fitBoundsToResults && dateFilteredPlaces.length > 0) {
       var bounds = L.latLngBounds(dateFilteredPlaces.map(function (p) { return [p.lat, p.lng]; }));
       map.fitBounds(bounds.pad(0.3), { maxZoom: 12 });
     }
@@ -173,7 +178,7 @@
   function deletePlace(id) {
     places = places.filter(function (p) { return p.id !== id; });
     savePlaces(places);
-    refreshMarkersForDateFilter();
+    refreshMarkersForDateFilter(true);
   }
 
   // ---------- 地図の表示範囲に応じた下部リストの更新 ----------
@@ -288,7 +293,7 @@
 
     // 期間指定があるとフォーカス対象が表示されない場合があるため、いったん解除する
     els.viewDate.value = '';
-    refreshMarkersForDateFilter();
+    refreshMarkersForDateFilter(false); // 直後に setView するため、ここでの表示範囲調整は不要
 
     map.setView([target.lat, target.lng], 15);
     markersLayer.eachLayer(function (m) {

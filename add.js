@@ -128,8 +128,8 @@
     isEditMode = true;
     editingId = place.id;
 
-    els.pageTitle.textContent = '行き先を編集';
-    document.title = '行き先を編集 | 行きたい場所マップ';
+    els.pageTitle.textContent = '行き先編集';
+    document.title = '行き先編集 | 行きたい場所マップ';
     els.saveBtn.textContent = getSaveLabel();
 
     // 編集画面からの「戻る」は詳細画面に戻す。history.pushState ではなく replace を使うことで、

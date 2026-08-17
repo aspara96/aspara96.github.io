@@ -69,7 +69,9 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   border-bottom: 3px solid var(--color-gold);
   position: sticky;
   top: 0;
-  z-index: 20;
+  /* Leafletの内部要素（タイル・コントロール等）はz-indexが最大1000程度まであるため、
+     ヘッダー（と、その子要素であるメニュー）は確実にそれより上に来る値にしておく */
+  z-index: 2000;
 }
 .app-header h1 {
   font-size: 18px;

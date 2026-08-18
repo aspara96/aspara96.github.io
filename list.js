@@ -7,10 +7,12 @@
   'use strict';
 
   var places = loadPlaces();
+  var categories = loadCategories();
 
   var els = {
     searchQuery: document.getElementById('placeSearchQuery'),
     searchClearBtn: document.getElementById('placeSearchClearBtn'),
+    categoryFilter: document.getElementById('categoryFilter'),
     placeList: document.getElementById('placeList'),
     placeCount: document.getElementById('placeCount'),
     exportBtn: document.getElementById('exportBtn'),
@@ -23,8 +25,19 @@
 
   function init() {
     bindEvents();
+    populateCategoryFilterOptions();
     updateSearchClearVisibility();
     renderList();
+  }
+
+  // カテゴリー一覧を絞り込み用の選択肢として反映する
+  function populateCategoryFilterOptions() {
+    categories.forEach(function (c) {
+      var option = document.createElement('option');
+      option.value = c.id;
+      option.textContent = c.icon + ' ' + c.name;
+      els.categoryFilter.appendChild(option);
+    });
   }
 
   function bindEvents() {
@@ -39,6 +52,8 @@
       renderList();
       els.searchQuery.focus();
     });
+
+    els.categoryFilter.addEventListener('change', renderList);
 
     els.exportBtn.addEventListener('click', onExport);
     els.importBtn.addEventListener('click', function () {
@@ -185,12 +200,15 @@
     els.searchClearBtn.hidden = !els.searchQuery.value;
   }
 
-  // 名前・住所・メモを対象に大文字小文字を区別せず部分一致で絞り込む
+  // 名前・住所・メモを対象に大文字小文字を区別せず部分一致で絞り込む。
+  // カテゴリーが選択されている場合は、そのカテゴリーの行き先のみに絞り込む。
   function getFilteredPlaces() {
     var query = els.searchQuery.value.trim().toLowerCase();
-    if (!query) return places.slice();
+    var categoryId = els.categoryFilter.value;
 
     return places.filter(function (p) {
+      if (categoryId && p.categoryId !== categoryId) return false;
+      if (!query) return true;
       var haystack = [p.name, p.address, p.memo].filter(Boolean).join(' ').toLowerCase();
       return haystack.indexOf(query) !== -1;
     });
@@ -245,10 +263,23 @@
       var infoEl = document.createElement('div');
       infoEl.className = 'place-info';
 
+      var nameRow = document.createElement('div');
+      nameRow.className = 'place-name-row';
+
+      var category = findCategoryById(categories, p.categoryId);
+      if (category) {
+        var iconEl = document.createElement('span');
+        iconEl.className = 'place-category-icon';
+        iconEl.textContent = category.icon;
+        nameRow.appendChild(iconEl);
+      }
+
       var nameEl = document.createElement('span');
       nameEl.className = 'place-name';
       nameEl.textContent = p.name;
-      infoEl.appendChild(nameEl);
+      nameRow.appendChild(nameEl);
+
+      infoEl.appendChild(nameRow);
 
       // 開始日・終了日（期限なしの場合も formatPeriodLabel で表記を統一）
       var periodEl = document.createElement('span');

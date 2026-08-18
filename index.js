@@ -6,6 +6,7 @@
   'use strict';
 
   var places = loadPlaces();
+  var categories = loadCategories();
   var dateFilteredPlaces = []; // 期間の条件に一致する場所（地図上のピン全体）
   var map = null;
   var markersLayer = null;
@@ -234,10 +235,23 @@
       var infoEl = document.createElement('div');
       infoEl.className = 'place-info';
 
+      var nameRow = document.createElement('div');
+      nameRow.className = 'place-name-row';
+
+      var category = findCategoryById(categories, p.categoryId);
+      if (category) {
+        var iconEl = document.createElement('span');
+        iconEl.className = 'place-category-icon';
+        iconEl.textContent = category.icon;
+        nameRow.appendChild(iconEl);
+      }
+
       var nameEl = document.createElement('span');
       nameEl.className = 'place-name';
       nameEl.textContent = p.name;
-      infoEl.appendChild(nameEl);
+      nameRow.appendChild(nameEl);
+
+      infoEl.appendChild(nameRow);
 
       var periodEl = document.createElement('span');
       periodEl.className = 'place-period';

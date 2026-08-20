@@ -120,6 +120,12 @@
     });
     actions.appendChild(editLink);
 
+    var duplicateLink = document.createElement('a');
+    duplicateLink.className = 'focus-btn';
+    duplicateLink.href = 'add.html?duplicate=' + encodeURIComponent(place.id);
+    duplicateLink.textContent = '複製';
+    actions.appendChild(duplicateLink);
+
     var delBtn = document.createElement('button');
     delBtn.type = 'button';
     delBtn.className = 'delete-btn';

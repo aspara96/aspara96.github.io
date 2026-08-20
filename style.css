@@ -698,10 +698,10 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 .detail-value { font-size: 14px; color: var(--color-text); overflow-wrap: break-word; }
 .detail-value a { color: var(--color-teal); word-break: break-all; }
 
-.detail-actions { display: flex; gap: 10px; margin-top: 6px; }
+.detail-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
 .detail-actions .focus-btn,
 .detail-actions .delete-btn {
-  flex: 1;
+  flex: 1 1 calc(50% - 5px);
   min-height: 46px;
   font-size: 14px;
 }

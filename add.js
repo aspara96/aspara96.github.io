@@ -49,10 +49,17 @@
 
     var params = new URLSearchParams(window.location.search);
     var id = params.get('id');
+    var duplicateId = params.get('duplicate');
+
     if (id) {
       var place = loadPlaces().find(function (p) { return p.id === id; });
       if (place) {
         enterEditMode(place);
+      }
+    } else if (duplicateId) {
+      var sourcePlace = loadPlaces().find(function (p) { return p.id === duplicateId; });
+      if (sourcePlace) {
+        enterDuplicateMode(sourcePlace);
       }
     }
 
@@ -159,6 +166,32 @@
 
   function getSaveLabel() {
     return isEditMode ? '更新' : '登録';
+  }
+
+  // 詳細画面の「複製」から遷移してきた場合：内容を事前入力するが、編集モードにはしない
+  // （isEditMode は false のままなので、保存すると新しいIDの行き先として登録される）
+  function enterDuplicateMode(sourcePlace) {
+    els.name.value = sourcePlace.name || '';
+    els.address.value = sourcePlace.address || '';
+    els.url.value = sourcePlace.url || '';
+    els.category.value = sourcePlace.categoryId || '';
+    els.startDate.value = sourcePlace.startDate || '';
+    els.endDate.value = sourcePlace.endDate || '';
+    els.memo.value = sourcePlace.memo || '';
+    updateAddressClearVisibility();
+
+    // 複製元と同じ座標をそのまま確定済みとして扱う（住所欄を編集しない限り再検索しない）
+    confirmedLocation = { lat: sourcePlace.lat, lng: sourcePlace.lng };
+    placeMarkerAt(sourcePlace.lat, sourcePlace.lng);
+    map.setView([sourcePlace.lat, sourcePlace.lng], 15);
+
+    // 複製元の詳細画面に「戻る」で戻れるようにする（履歴を余計に積まない理由は enterEditMode 参照）
+    var backUrl = 'detail.html?id=' + encodeURIComponent(sourcePlace.id);
+    els.backBtn.href = backUrl;
+    els.backBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      window.location.replace(backUrl);
+    });
   }
 
   function updateSaveButtonState() {

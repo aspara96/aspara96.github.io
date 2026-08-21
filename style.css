@@ -267,23 +267,6 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 .legend-dot.legend-black { background: var(--color-pin-black); }
 .legend-dot.legend-blue { background: var(--color-pin-blue); }
 
-/* 「行き先一覧」への導線ボタン（地図の下、以前のステータス表示があった位置） */
-.map-list-btn {
-  margin: 8px 16px 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 14px;
-  min-height: 34px;
-  background: var(--color-gold);
-  color: var(--color-ink);
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: none;
-}
-.map-list-btn:active { background: var(--color-gold-dark); }
-
 /* 検索欄の「×」クリアボタン（地図画面の場所検索・一覧画面の検索・追加画面の住所欄で使用）
    他の金色ボタンとは異なり、入力欄になじむよう控えめな塗りつぶし円のデザインにしている */
 .input-clear-wrap {
@@ -720,7 +703,7 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 
 /* ---------- カテゴリー検索（登録場所一覧画面） ---------- */
 
-.category-filter-wrap { padding: 0 16px 12px; }
+.category-filter-wrap { padding: 8px 16px 12px; }
 .category-filter-wrap select {
   width: 100%;
   height: 34px;

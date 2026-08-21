@@ -19,6 +19,7 @@
     viewDate: document.getElementById('viewDate'),
     todayBtn: document.getElementById('todayBtn'),
     clearDateBtn: document.getElementById('clearDateBtn'),
+    categoryFilter: document.getElementById('categoryFilter'),
     placeList: document.getElementById('placeList'),
     placeCount: document.getElementById('placeCount'),
     clearAllBtn: document.getElementById('clearAllBtn'),
@@ -29,9 +30,20 @@
   function init() {
     initMap();
     bindEvents();
+    populateCategoryFilterOptions();
     updateMapSearchClearVisibility();
     refreshMarkersForDateFilter(true); // 初回表示時のみ、全ピンが収まるように表示範囲を合わせる
     handleFocusParam();
+  }
+
+  // カテゴリー一覧を絞り込み用の選択肢として反映する
+  function populateCategoryFilterOptions() {
+    categories.forEach(function (c) {
+      var option = document.createElement('option');
+      option.value = c.id;
+      option.textContent = c.icon + ' ' + c.name;
+      els.categoryFilter.appendChild(option);
+    });
   }
 
   function initMap() {
@@ -77,6 +89,10 @@
 
     els.clearDateBtn.addEventListener('click', function () {
       els.viewDate.value = '';
+      refreshMarkersForDateFilter(false);
+    });
+
+    els.categoryFilter.addEventListener('change', function () {
       refreshMarkersForDateFilter(false);
     });
 
@@ -129,18 +145,20 @@
     return getViewDate() || formatDate(new Date());
   }
 
-  // 期間の条件に合わせてピンを張り直す（日付変更・今日・すべて・追加・削除のたびに呼ぶ）
+  // 期間の条件に合わせてピンを張り直す（日付変更・今日・すべて・カテゴリー・追加・削除のたびに呼ぶ）
   // 期限が設定されていない場所や、開始日/終了日の片方のみ設定された場所も isActiveOn の
   // ルールに従って表示・非表示が決まる。
   // fitBoundsToResults に true を渡した場合のみ、表示範囲をピンに合わせて調整する
-  // （初回表示時のみ true にし、日付の変更時は現在の表示範囲を維持する）。
+  // （初回表示時のみ true にし、日付・カテゴリーの変更時は現在の表示範囲を維持する）。
   function refreshMarkersForDateFilter(fitBoundsToResults) {
     var viewDate = getViewDate();
     var referenceDate = getReferenceDate();
+    var categoryId = els.categoryFilter.value;
 
-    dateFilteredPlaces = viewDate
-      ? places.filter(function (p) { return isActiveOn(p, viewDate); })
-      : places.slice();
+    dateFilteredPlaces = places.filter(function (p) {
+      if (categoryId && p.categoryId !== categoryId) return false;
+      return viewDate ? isActiveOn(p, viewDate) : true;
+    });
 
     markersLayer.clearLayers();
     dateFilteredPlaces.forEach(function (p) {

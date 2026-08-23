@@ -211,6 +211,12 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   color: var(--color-text);
 }
 
+/* 一覧画面のカテゴリー絞り込みセレクトは、検索ボックス（.input-clear-wrap、flex:1で行全体に伸びる）と
+   横幅を確実に揃えるため、flexの計算だけに頼らず width:100% も明示しておく */
+.filter-row select {
+  width: 100%;
+}
+
 .filter-row button:not(.input-clear-btn) {
   padding: 0 14px;
   border: none;

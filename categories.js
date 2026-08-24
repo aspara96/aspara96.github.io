@@ -8,12 +8,18 @@
 // カテゴリー絞り込み欄は、いずれも loadCategories() の結果をそのままの順で選択肢に反映して
 // いるため、ここで並べ替えて保存すれば、それらの画面を開き直すだけで自動的に反映される
 // （それらの画面側の変更は不要）。
+//
+// アイコン入力欄（#categoryIcon）は以下の3点を満たすよう独自に制御している。
+// 1. 未入力のまま送信したときの標準エラーメッセージを「アイコンを入力してください」にする
+// 2. 入力を1文字（絵文字などの合成文字も含めて「見た目の1文字＝書記素クラスタ」単位）に制限する
+// 3. 半角の数字・アルファベット・カタカナを全角に自動変換する（濁点・半濁点の合成も行う）
 
 (function () {
   'use strict';
 
   var categories = loadCategories();
   var editingId = null; // 編集中のカテゴリーID（null なら新規追加モード）
+  var isComposingIcon = false; // IME変換中は値の書き換えを行わないためのフラグ
 
   var els = {
     form: document.getElementById('categoryForm'),
@@ -35,6 +41,124 @@
   function bindEvents() {
     els.form.addEventListener('submit', onSave);
     els.cancelBtn.addEventListener('click', exitEditMode);
+
+    // IME（日本語入力）での変換中に値を書き換えると変換が壊れてしまうため、
+    // 変換確定後（compositionend）にのみ正規化・文字数制限をかける。
+    // 変換を伴わない通常の入力・貼り付けは input イベントでその都度処理する。
+    els.icon.addEventListener('compositionstart', function () {
+      isComposingIcon = true;
+    });
+    els.icon.addEventListener('compositionend', function () {
+      isComposingIcon = false;
+      applyIconInputRules();
+    });
+    els.icon.addEventListener('input', function () {
+      if (isComposingIcon) return;
+      applyIconInputRules();
+    });
+
+    // 未入力のまま送信したときの標準メッセージを差し替える
+    els.icon.addEventListener('invalid', function () {
+      if (els.icon.validity.valueMissing) {
+        els.icon.setCustomValidity('アイコンを入力してください');
+      } else {
+        els.icon.setCustomValidity('');
+      }
+    });
+  }
+
+  // ---------- アイコン入力欄の正規化（全角変換・1文字制限） ----------
+
+  // 半角カタカナ（記号類含む） → 全角カタカナ・記号 の対応表
+  var HALF_TO_FULL_KANA = {
+    '｡': '。', '｢': '「', '｣': '」', '､': '、', '･': '・',
+    'ｦ': 'ヲ', 'ｧ': 'ァ', 'ｨ': 'ィ', 'ｩ': 'ゥ', 'ｪ': 'ェ', 'ｫ': 'ォ',
+    'ｬ': 'ャ', 'ｭ': 'ュ', 'ｮ': 'ョ', 'ｯ': 'ッ', 'ｰ': 'ー',
+    'ｱ': 'ア', 'ｲ': 'イ', 'ｳ': 'ウ', 'ｴ': 'エ', 'ｵ': 'オ',
+    'ｶ': 'カ', 'ｷ': 'キ', 'ｸ': 'ク', 'ｹ': 'ケ', 'ｺ': 'コ',
+    'ｻ': 'サ', 'ｼ': 'シ', 'ｽ': 'ス', 'ｾ': 'セ', 'ｿ': 'ソ',
+    'ﾀ': 'タ', 'ﾁ': 'チ', 'ﾂ': 'ツ', 'ﾃ': 'テ', 'ﾄ': 'ト',
+    'ﾅ': 'ナ', 'ﾆ': 'ニ', 'ﾇ': 'ヌ', 'ﾈ': 'ネ', 'ﾉ': 'ノ',
+    'ﾊ': 'ハ', 'ﾋ': 'ヒ', 'ﾌ': 'フ', 'ﾍ': 'ヘ', 'ﾎ': 'ホ',
+    'ﾏ': 'マ', 'ﾐ': 'ミ', 'ﾑ': 'ム', 'ﾒ': 'メ', 'ﾓ': 'モ',
+    'ﾔ': 'ヤ', 'ﾕ': 'ユ', 'ﾖ': 'ヨ',
+    'ﾗ': 'ラ', 'ﾘ': 'リ', 'ﾙ': 'ル', 'ﾚ': 'レ', 'ﾛ': 'ロ',
+    'ﾜ': 'ワ', 'ﾝ': 'ン',
+    'ﾞ': '゛', 'ﾟ': '゜',
+  };
+
+  // 濁点（ﾞ）が続いた場合に1文字へ合成する（例: "ｶ"+"ﾞ" → "ガ"）
+  var DAKUTEN_MAP = {
+    'ｶ': 'ガ', 'ｷ': 'ギ', 'ｸ': 'グ', 'ｹ': 'ゲ', 'ｺ': 'ゴ',
+    'ｻ': 'ザ', 'ｼ': 'ジ', 'ｽ': 'ズ', 'ｾ': 'ゼ', 'ｿ': 'ゾ',
+    'ﾀ': 'ダ', 'ﾁ': 'ヂ', 'ﾂ': 'ヅ', 'ﾃ': 'デ', 'ﾄ': 'ド',
+    'ﾊ': 'バ', 'ﾋ': 'ビ', 'ﾌ': 'ブ', 'ﾍ': 'ベ', 'ﾎ': 'ボ',
+    'ｳ': 'ヴ',
+  };
+
+  // 半濁点（ﾟ）が続いた場合に1文字へ合成する（例: "ﾊ"+"ﾟ" → "パ"）
+  var HANDAKUTEN_MAP = {
+    'ﾊ': 'パ', 'ﾋ': 'ピ', 'ﾌ': 'プ', 'ﾍ': 'ペ', 'ﾎ': 'ポ',
+  };
+
+  // 半角の数字・英字・カタカナ（濁点・半濁点の合成含む）を全角に変換する
+  function toFullWidth(value) {
+    var chars = Array.from(value); // コードポイント単位で分解（サロゲートペアも1要素として扱う）
+    var result = [];
+
+    for (var i = 0; i < chars.length; i++) {
+      var ch = chars[i];
+      var next = chars[i + 1];
+
+      if (next === 'ﾞ' && DAKUTEN_MAP[ch]) {
+        result.push(DAKUTEN_MAP[ch]);
+        i++; // 濁点の分を読み飛ばす
+        continue;
+      }
+      if (next === 'ﾟ' && HANDAKUTEN_MAP[ch]) {
+        result.push(HANDAKUTEN_MAP[ch]);
+        i++; // 半濁点の分を読み飛ばす
+        continue;
+      }
+      if (HALF_TO_FULL_KANA[ch]) {
+        result.push(HALF_TO_FULL_KANA[ch]);
+        continue;
+      }
+
+      var code = ch.length === 1 ? ch.charCodeAt(0) : 0;
+      // 半角数字(0-9)・半角英字(A-Z, a-z) はUnicode上での対応する全角形へ一律オフセットで変換できる
+      if ((code >= 0x30 && code <= 0x39) || (code >= 0x41 && code <= 0x5A) || (code >= 0x61 && code <= 0x7A)) {
+        result.push(String.fromCharCode(code + 0xFEE0));
+      } else {
+        result.push(ch);
+      }
+    }
+
+    return result.join('');
+  }
+
+  // 見た目の1文字（書記素クラスタ）単位に分割する。絵文字の肌色修飾や国旗などの
+  // 合成絵文字も可能な限り正しく1文字として扱うため、対応環境では Intl.Segmenter を使う。
+  // 非対応環境ではコードポイント単位（Array.from）にフォールバックする。
+  function splitIntoGraphemes(value) {
+    if (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function') {
+      var segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+      return Array.from(segmenter.segment(value), function (s) { return s.segment; });
+    }
+    return Array.from(value);
+  }
+
+  // 全角変換 → 1文字への切り詰め、の順で適用する（先に全角変換しないと、
+  // "ｶ"+"ﾞ" のような2文字構成の半角カタカナが濁点を失ったまま切り詰められてしまうため）
+  function applyIconInputRules() {
+    var converted = toFullWidth(els.icon.value);
+    var graphemes = splitIntoGraphemes(converted);
+    var limited = graphemes.length > 1 ? graphemes[0] : converted;
+
+    if (limited !== els.icon.value) {
+      els.icon.value = limited;
+    }
+    els.icon.setCustomValidity('');
   }
 
   // ---------- 追加・編集 ----------
@@ -69,6 +193,7 @@
   function enterEditMode(category) {
     editingId = category.id;
     els.icon.value = category.icon;
+    applyIconInputRules(); // 過去に登録された（現行ルールより長い）アイコンも表示上正規化しておく
     els.name.value = category.name;
     els.saveBtn.textContent = '更新';
     els.cancelBtn.hidden = false;
@@ -78,6 +203,7 @@
   function exitEditMode() {
     editingId = null;
     els.form.reset();
+    els.icon.setCustomValidity('');
     els.saveBtn.textContent = '追加';
     els.cancelBtn.hidden = true;
   }

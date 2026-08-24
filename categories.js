@@ -65,6 +65,17 @@
         els.icon.setCustomValidity('');
       }
     });
+
+    els.name.addEventListener('invalid', function () {
+      if (els.name.validity.valueMissing) {
+        els.name.setCustomValidity('名前を入力してください');
+      } else {
+        els.name.setCustomValidity('');
+      }
+    });
+    els.name.addEventListener('input', function () {
+      els.name.setCustomValidity('');
+    });
   }
 
   // ---------- アイコン入力欄の正規化（全角変換・1文字制限） ----------
@@ -204,6 +215,7 @@
     editingId = null;
     els.form.reset();
     els.icon.setCustomValidity('');
+    els.name.setCustomValidity('');
     els.saveBtn.textContent = '追加';
     els.cancelBtn.hidden = true;
   }

@@ -257,12 +257,14 @@
       nameRow.className = 'place-name-row';
 
       var category = findCategoryById(categories, p.categoryId);
+      var iconEl = document.createElement('span');
+      iconEl.className = 'place-category-icon';
       if (category) {
-        var iconEl = document.createElement('span');
-        iconEl.className = 'place-category-icon';
         iconEl.textContent = category.icon;
-        nameRow.appendChild(iconEl);
+      } else {
+        iconEl.setAttribute('aria-hidden', 'true'); // 見た目の位置揃え用の空欄なので読み上げ対象外にする
       }
+      nameRow.appendChild(iconEl);
 
       var nameEl = document.createElement('span');
       nameEl.className = 'place-name';

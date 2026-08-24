@@ -349,7 +349,6 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 .place-item:active { background: #f7f5ee; }
 
 .place-name {
-  flex: 1;
   min-width: 0;
   font-family: 'Shippori Mincho', serif;
   font-weight: 700;
@@ -360,7 +359,9 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   text-overflow: ellipsis;
 }
 
-/* 登録場所一覧画面：名前の下に期間も表示する場合の縦積みラッパー */
+/* 登録場所一覧画面：名前の下に期間を表示する縦積みラッパー。
+   カテゴリーアイコンは .place-item 側の直下の要素に分離したので、
+   名前・期間はどちらもこのコンテナの左端（＝同じ横位置）から始まる。 */
 .place-info {
   flex: 1;
   min-width: 0;
@@ -370,13 +371,9 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   gap: 2px;
 }
 
-/* 名前の左にカテゴリーアイコンを並べる行 */
-.place-name-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
+/* カテゴリーアイコンは .place-item 直下の要素にして、削除ボタン等のアクションと
+   同じくアイテム全体の高さに対して縦中央に揃える（名前の行だけに対してではない）。
+   カテゴリー未設定の場合も空欄のまま同じ幅を確保し、名前・期間の開始位置がずれないようにする。 */
 .place-category-icon {
   flex-shrink: 0;
   width: 20px;

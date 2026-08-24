@@ -379,8 +379,10 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 }
 .place-category-icon {
   flex-shrink: 0;
+  width: 20px;
   font-size: 14px;
   line-height: 1;
+  text-align: center;
 }
 
 .place-period {

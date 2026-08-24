@@ -1,7 +1,10 @@
 // list.js
 // 登録した場所の一覧画面（list.html）専用の処理です。地図・期間フィルターに関係なく、
 // 保存されている場所を常にすべて表示します。
-// common.js の関数（loadPlaces / savePlaces など）に依存しています。
+// common.js の関数（loadPlaces / savePlaces / loadCategories / saveCategories など）に依存しています。
+//
+// バックアップ（JSON書き出し・読み込み）は「行き先（places）」と「カテゴリー（categories）」を
+// まとめて1つのファイルに含める形式に対応しています。詳細は onExport() / importBackup() を参照。
 
 (function () {
   'use strict';
@@ -30,8 +33,13 @@
     renderList();
   }
 
-  // カテゴリー一覧を絞り込み用の選択肢として反映する
+  // カテゴリー一覧を絞り込み用の選択肢として反映する。
+  // インポートで新しいカテゴリーが追加された場合にも呼び直せるよう、
+  // 既存の動的オプション（先頭の「すべてのカテゴリー」を除く）を一旦クリアしてから再構築する。
   function populateCategoryFilterOptions() {
+    while (els.categoryFilter.options.length > 1) {
+      els.categoryFilter.remove(1);
+    }
     categories.forEach(function (c) {
       var option = document.createElement('option');
       option.value = c.id;
@@ -72,14 +80,35 @@
   }
 
   // ---------- バックアップの書き出し・共有 ----------
+  //
+  // 書き出すJSONの形式（version 2）:
+  // {
+  //   "app": "itsumap",
+  //   "version": 2,
+  //   "exportedAt": "2026-08-24T12:34:56.789Z",
+  //   "places": [ Place, ... ],
+  //   "categories": [ Category, ... ]
+  // }
+  //
+  // 行き先だけでなく、カテゴリー（アイコン・名前）もまとめて共有・復元できるようにするための形式。
+  // 旧バージョン（行き先の配列のみを書き出していた形式）で書き出したファイルも、
+  // 読み込み側（importBackup）で引き続き読み込める。
 
   function onExport() {
-    if (places.length === 0) {
-      alert('書き出せる行き先がありません。');
+    if (places.length === 0 && categories.length === 0) {
+      alert('書き出せるデータがありません。');
       return;
     }
 
-    var json = JSON.stringify(places, null, 2);
+    var backup = {
+      app: 'itsumap',
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      places: places,
+      categories: loadCategories(), // 念のためエクスポート時点の最新の内容を読み直す
+    };
+
+    var json = JSON.stringify(backup, null, 2);
     var filename = 'itsumap-backup-' + formatDate(new Date()).replace(/-/g, '') + '.json';
 
     // iOSなど対応環境では共有シート（AirDrop・メッセージ・メールなど）から直接送れるようにする
@@ -89,7 +118,7 @@
         navigator.share({
           files: [file],
           title: 'いつマップ バックアップ',
-          text: '「いつマップ」の行き先データです。',
+          text: '「いつマップ」の行き先・カテゴリーのデータです。',
         }).catch(function () {
           // 共有をキャンセルした場合などは何もしない
         });
@@ -125,12 +154,96 @@
         alert('ファイルを読み込めませんでした。正しいバックアップファイルか確認してください。');
         return;
       }
-      importPlaces(data);
+      importBackup(data);
     };
     reader.onerror = function () {
       alert('ファイルの読み込みに失敗しました。');
     };
     reader.readAsText(file);
+  }
+
+  // data の形式を判定し、行き先・カテゴリーそれぞれの取り込み処理を呼び出す。
+  // - 新形式: { places: [...], categories: [...] }（categories は省略されている場合もある）
+  // - 旧形式: 行き先の配列そのもの（カテゴリーは含まれない）
+  function importBackup(data) {
+    var importedPlaces;
+    var importedCategories = [];
+
+    if (Array.isArray(data)) {
+      importedPlaces = data; // 旧形式（行き先の配列のみ）
+    } else if (data && typeof data === 'object' && Array.isArray(data.places)) {
+      importedPlaces = data.places; // 新形式
+      if (Array.isArray(data.categories)) {
+        importedCategories = data.categories;
+      }
+    } else {
+      alert('ファイルを読み込めませんでした。正しいバックアップファイルか確認してください。');
+      return;
+    }
+
+    // 先にカテゴリーを取り込む。行き先側の categoryId が、取り込んだ／既存のカテゴリーを
+    // 指しているかどうかの判定に使うため。
+    var categoryResult = importCategories(importedCategories);
+    if (categoryResult.added > 0) {
+      populateCategoryFilterOptions();
+    }
+
+    var placeResult = importPlacesData(importedPlaces, categoryResult.knownIds);
+
+    renderList();
+
+    var message = placeResult.added + '件の行き先を追加しました。';
+    if (categoryResult.added > 0) {
+      message += '\nカテゴリーを' + categoryResult.added + '件追加しました。';
+    }
+
+    var skippedParts = [];
+    if (placeResult.skipped > 0) skippedParts.push('行き先' + placeResult.skipped + '件');
+    if (categoryResult.skipped > 0) skippedParts.push('カテゴリー' + categoryResult.skipped + '件');
+    if (skippedParts.length > 0) {
+      message += '\n（' + skippedParts.join('、') + 'は無効なデータ、または登録済みのためスキップしました）';
+    }
+
+    alert(message);
+  }
+
+  function isValidImportedCategory(c) {
+    return !!(c && typeof c === 'object' &&
+      typeof c.id === 'string' && c.id &&
+      typeof c.icon === 'string' && c.icon.trim() &&
+      typeof c.name === 'string' && c.name.trim());
+  }
+
+  // 既に同じIDのカテゴリーが登録済みの場合はスキップ（ローカル側の内容を優先）し、
+  // それ以外は追加する。戻り値の knownIds には「取り込み後に存在するカテゴリーIDの集合」
+  // （= 元々あったもの＋今回追加したもの）を含め、行き先側の categoryId 復元に使う。
+  function importCategories(importedCategories) {
+    var knownIds = {};
+    categories.forEach(function (c) { knownIds[c.id] = true; });
+
+    var added = 0;
+    var skipped = 0;
+
+    importedCategories.forEach(function (item) {
+      if (!isValidImportedCategory(item)) {
+        skipped++;
+        return;
+      }
+      if (knownIds[item.id]) {
+        skipped++;
+        return;
+      }
+
+      categories.push({ id: item.id, icon: item.icon, name: item.name });
+      knownIds[item.id] = true;
+      added++;
+    });
+
+    if (added > 0) {
+      saveCategories(categories);
+    }
+
+    return { added: added, skipped: skipped, knownIds: knownIds };
   }
 
   function isValidImportedPlace(p) {
@@ -140,20 +253,17 @@
   }
 
   // 既に同じIDの行き先が登録済みの場合はスキップし、それ以外は追加する
-  // （自分のバックアップの再読み込みでは重複せず、他の人からの共有では追加される）
-  function importPlaces(data) {
-    if (!Array.isArray(data)) {
-      alert('ファイルを読み込めませんでした。正しいバックアップファイルか確認してください。');
-      return;
-    }
-
+  // （自分のバックアップの再読み込みでは重複せず、他の人からの共有では追加される）。
+  // categoryId は、knownCategoryIds（取り込み後に存在するカテゴリーIDの集合）に
+  // 含まれている場合のみ引き継ぎ、それ以外（該当カテゴリーが手元にない場合）は未設定にする。
+  function importPlacesData(importedPlaces, knownCategoryIds) {
     var existingIds = {};
     places.forEach(function (p) { existingIds[p.id] = true; });
 
     var added = 0;
     var skipped = 0;
 
-    data.forEach(function (item) {
+    importedPlaces.forEach(function (item) {
       if (!isValidImportedPlace(item)) {
         skipped++;
         return;
@@ -167,6 +277,10 @@
         ? item.id
         : Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
+      var categoryId = (typeof item.categoryId === 'string' && item.categoryId && knownCategoryIds[item.categoryId])
+        ? item.categoryId
+        : '';
+
       places.push({
         id: id,
         name: item.name,
@@ -177,6 +291,7 @@
         endDate: typeof item.endDate === 'string' ? item.endDate : '',
         memo: typeof item.memo === 'string' ? item.memo : '',
         url: typeof item.url === 'string' ? item.url : '',
+        categoryId: categoryId,
       });
       existingIds[id] = true;
       added++;
@@ -185,13 +300,8 @@
     if (added > 0) {
       savePlaces(places);
     }
-    renderList();
 
-    var message = added + '件を追加しました。';
-    if (skipped > 0) {
-      message += '（' + skipped + '件は無効なデータ、または登録済みのためスキップしました）';
-    }
-    alert(message);
+    return { added: added, skipped: skipped };
   }
 
   // ---------- 検索・並び替え ----------

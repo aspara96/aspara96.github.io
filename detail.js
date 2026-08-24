@@ -105,7 +105,7 @@
     var mapLink = document.createElement('a');
     mapLink.className = 'focus-btn';
     mapLink.href = 'index.html?focus=' + encodeURIComponent(place.id);
-    mapLink.textContent = '地図で見る';
+    mapLink.textContent = '地図';
     actions.appendChild(mapLink);
 
     var editLink = document.createElement('a');

@@ -672,12 +672,14 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 .detail-value { font-size: 14px; color: var(--color-text); overflow-wrap: break-word; }
 .detail-value a { color: var(--color-teal); word-break: break-all; }
 
-.detail-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.detail-actions { display: flex; flex-wrap: nowrap; gap: 8px; margin-top: 6px; }
 .detail-actions .focus-btn,
 .detail-actions .delete-btn {
-  flex: 1 1 calc(50% - 5px);
-  min-height: 46px;
-  font-size: 14px;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 44px;
+  padding: 7px 4px;
+  font-size: 13px;
 }
 
 .detail-missing {
@@ -691,24 +693,6 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   align-items: center;
 }
 .detail-missing .focus-btn { padding: 10px 20px; }
-
-/* ---------- カテゴリー検索（登録場所一覧画面） ---------- */
-
-.category-filter-wrap { padding: 8px 16px 12px; }
-.category-filter-wrap select {
-  width: 100%;
-  height: 34px;
-  padding: 0 10px;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-text);
-}
-.category-filter-wrap select:focus {
-  outline: none;
-  border-color: var(--color-teal);
-  box-shadow: 0 0 0 3px rgba(58, 125, 123, 0.15);
-}
 
 /* ---------- カテゴリー設定画面（categories.html） ---------- */
 
@@ -796,6 +780,33 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   box-shadow: var(--shadow-sm);
   padding: 8px 12px;
 }
+.category-reorder {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.category-reorder-btn {
+  width: 26px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--color-line);
+  border-radius: 5px;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.category-reorder-btn:active { background: var(--color-line); }
+.category-reorder-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.category-reorder-btn:disabled:active { background: var(--color-paper); }
 .category-icon {
   font-size: 20px;
   width: 28px;

@@ -370,12 +370,6 @@
         }
       });
 
-      var infoEl = document.createElement('div');
-      infoEl.className = 'place-info';
-
-      var nameRow = document.createElement('div');
-      nameRow.className = 'place-name-row';
-
       var category = findCategoryById(categories, p.categoryId);
       var iconEl = document.createElement('span');
       iconEl.className = 'place-category-icon';
@@ -384,16 +378,16 @@
       } else {
         iconEl.setAttribute('aria-hidden', 'true'); // 見た目の位置揃え用の空欄なので読み上げ対象外にする
       }
-      nameRow.appendChild(iconEl);
+      li.appendChild(iconEl);
+
+      var infoEl = document.createElement('div');
+      infoEl.className = 'place-info';
 
       var nameEl = document.createElement('span');
       nameEl.className = 'place-name';
       nameEl.textContent = p.name;
-      nameRow.appendChild(nameEl);
+      infoEl.appendChild(nameEl);
 
-      infoEl.appendChild(nameRow);
-
-      // 開始日・終了日（期限なしの場合も formatPeriodLabel で表記を統一）
       var periodEl = document.createElement('span');
       periodEl.className = 'place-period';
       periodEl.textContent = formatPeriodLabel(p);

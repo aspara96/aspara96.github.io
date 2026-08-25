@@ -22,7 +22,6 @@
     categoryFilter: document.getElementById('categoryFilter'),
     placeList: document.getElementById('placeList'),
     placeCount: document.getElementById('placeCount'),
-    clearAllBtn: document.getElementById('clearAllBtn'),
   };
 
   init();
@@ -94,15 +93,6 @@
 
     els.categoryFilter.addEventListener('change', function () {
       refreshMarkersForDateFilter(false);
-    });
-
-    els.clearAllBtn.addEventListener('click', function () {
-      if (places.length === 0) return;
-      if (confirm('保存されている場所を全て削除します。よろしいですか？')) {
-        places = [];
-        savePlaces(places);
-        refreshMarkersForDateFilter(true);
-      }
     });
   }
 

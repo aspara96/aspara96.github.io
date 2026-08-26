@@ -35,7 +35,8 @@
     handleFocusParam();
   }
 
-  // カテゴリー一覧を絞り込み用の選択肢として反映する
+  // カテゴリー一覧を絞り込み用の選択肢として反映する。
+  // 「未設定」はどのカテゴリーにも属さない特別な選択肢のため、一覧の最後に追加する。
   function populateCategoryFilterOptions() {
     categories.forEach(function (c) {
       var option = document.createElement('option');
@@ -43,6 +44,11 @@
       option.textContent = c.icon + ' ' + c.name;
       els.categoryFilter.appendChild(option);
     });
+
+    var unsetOption = document.createElement('option');
+    unsetOption.value = UNSET_CATEGORY_FILTER_VALUE;
+    unsetOption.textContent = '未設定';
+    els.categoryFilter.appendChild(unsetOption);
   }
 
   function initMap() {
@@ -146,7 +152,7 @@
     var categoryId = els.categoryFilter.value;
 
     dateFilteredPlaces = places.filter(function (p) {
-      if (categoryId && p.categoryId !== categoryId) return false;
+      if (!matchesCategoryFilter(categoryId, p.categoryId)) return false;
       return viewDate ? isActiveOn(p, viewDate) : true;
     });
 

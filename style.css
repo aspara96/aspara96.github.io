@@ -64,12 +64,14 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: calc(14px + var(--safe-top)) 18px 14px;
+  padding: calc(8px + var(--safe-top)) 18px 8px;
   background: var(--color-ink);
   border-bottom: 3px solid var(--color-gold);
   position: sticky;
   top: 0;
-  z-index: 20;
+  /* Leafletの内部要素（タイル・コントロール等）はz-indexが最大1000程度まであるため、
+     ヘッダー（と、その子要素であるメニュー）は確実にそれより上に来る値にしておく */
+  z-index: 2000;
 }
 .app-header h1 {
   font-size: 18px;
@@ -81,17 +83,28 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   align-items: center;
   gap: 8px;
 }
-.header-icon { font-size: 16px; }
 
-/* 地図画面のヘッダーのみ：タイトルと説明文を横並びにし、縦幅を最小限にする */
-.index-header { padding: calc(8px + var(--safe-top)) 18px 8px; }
-.header-text { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+/* 地図画面のヘッダーのみ：タイトルと説明文を横並びにする（縦幅は共通の app-header に統一済み）。
+   nowrap + ellipsis で2行に折り返さないようにし、他画面の1行ヘッダーと高さを確実に揃える。 */
+.header-text {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow: hidden;
+}
+.header-text h1 { flex-shrink: 0; }
 .header-subtitle {
   margin: 0;
   font-size: 13px;
   line-height: 1.3;
   color: rgba(244, 243, 236, 0.75);
   font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .add-header { gap: 14px; }
@@ -109,6 +122,54 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   flex-shrink: 0;
 }
 .back-btn:active { background: rgba(192, 138, 46, 0.18); }
+
+/* ---------- ハンバーガーメニュー（全画面共通） ---------- */
+
+.nav-menu-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: none;
+  color: var(--color-gold);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.nav-menu-btn:active { background: rgba(192, 138, 46, 0.18); }
+
+.nav-menu {
+  position: absolute;
+  top: 100%;
+  right: 18px;
+  margin-top: 6px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 50;
+  min-width: 168px;
+}
+.nav-menu[hidden] { display: none; }
+.nav-menu a {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--color-ink);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+.nav-menu a:active { background: var(--color-paper); }
+.nav-menu a.current-page { color: var(--color-teal); font-weight: 700; }
 
 /* ---------- 日付・場所フィルター（地図画面上部） ---------- */
 /* 「日付」「場所」の2行を1枚のカードにまとめ、縦幅を抑えたコンパクトな見た目にする */
@@ -137,7 +198,8 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 }
 
 .filter-row input[type="date"],
-.filter-row input[type="text"] {
+.filter-row input[type="text"],
+.filter-row select {
   flex: 1;
   min-width: 0;
   height: 34px;
@@ -149,7 +211,13 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   color: var(--color-text);
 }
 
-.filter-row button {
+/* 一覧画面のカテゴリー絞り込みセレクトは、検索ボックス（.input-clear-wrap、flex:1で行全体に伸びる）と
+   横幅を確実に揃えるため、flexの計算だけに頼らず width:100% も明示しておく */
+.filter-row select {
+  width: 100%;
+}
+
+.filter-row button:not(.input-clear-btn) {
   padding: 0 14px;
   border: none;
   background: var(--color-gold);
@@ -162,7 +230,7 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   min-height: 34px;
   flex-shrink: 0;
 }
-.filter-row button:active { background: var(--color-gold-dark); }
+.filter-row button:not(.input-clear-btn):active { background: var(--color-gold-dark); }
 
 /* フィルターバーの直下に出る地名検索の候補一覧 */
 #mapSearchResults { margin: 6px 16px 0; }
@@ -206,39 +274,45 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 .legend-dot.legend-black { background: var(--color-pin-black); }
 .legend-dot.legend-blue { background: var(--color-pin-blue); }
 
-/* 「行き先一覧」への導線ボタン（地図の下、以前のステータス表示があった位置） */
-.map-list-btn {
-  margin: 8px 16px 0;
-  display: inline-flex;
+/* 検索欄の「×」クリアボタン（地図画面の場所検索・一覧画面の検索・追加画面の住所欄で使用）
+   他の金色ボタンとは異なり、入力欄になじむよう控えめな塗りつぶし円のデザインにしている */
+.input-clear-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+.input-clear-wrap input { width: 100%; }
+
+.input-clear-btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-line);
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 14px;
-  min-height: 34px;
-  background: var(--color-gold);
-  color: var(--color-ink);
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: none;
 }
-.map-list-btn:active { background: var(--color-gold-dark); }
+.input-clear-btn:active { background: var(--color-text-muted); color: var(--color-surface); }
+
+#mapSearchQuery,
+#placeSearchQuery,
+#placeAddress {
+  padding-right: 30px;
+}
 
 /* 登録場所一覧画面の検索ボックス */
-.list-search { padding: 16px 16px 0; }
-.list-search input[type="search"] {
-  width: 100%;
-  padding: 11px 12px;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-text);
-}
-.list-search input[type="search"]:focus {
-  outline: none;
-  border-color: var(--color-teal);
-  box-shadow: 0 0 0 3px rgba(58, 125, 123, 0.15);
-}
-
 /* ---------- 場所リスト（一覧画面の下部／登録場所一覧画面） ---------- */
 
 .place-list-section { padding: 16px; }
@@ -275,7 +349,6 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 .place-item:active { background: #f7f5ee; }
 
 .place-name {
-  flex: 1;
   min-width: 0;
   font-family: 'Shippori Mincho', serif;
   font-weight: 700;
@@ -286,7 +359,9 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   text-overflow: ellipsis;
 }
 
-/* 登録場所一覧画面：名前の下に期間も表示する場合の縦積みラッパー */
+/* 登録場所一覧画面：名前の下に期間を表示する縦積みラッパー。
+   カテゴリーアイコンは .place-item 側の直下の要素に分離したので、
+   名前・期間はどちらもこのコンテナの左端（＝同じ横位置）から始まる。 */
 .place-info {
   flex: 1;
   min-width: 0;
@@ -295,7 +370,18 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   justify-content: center;
   gap: 2px;
 }
-.place-info .place-name { flex: none; }
+
+/* カテゴリーアイコンは .place-item 直下の要素にして、削除ボタン等のアクションと
+   同じくアイテム全体の高さに対して縦中央に揃える（名前の行だけに対してではない）。
+   カテゴリー未設定の場合も空欄のまま同じ幅を確保し、名前・期間の開始位置がずれないようにする。 */
+.place-category-icon {
+  flex-shrink: 0;
+  width: 20px;
+  font-size: 14px;
+  line-height: 1;
+  text-align: center;
+}
+
 .place-period {
   font-size: 12px;
   color: var(--color-text-muted);
@@ -357,15 +443,17 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 .data-action-btn:active { background: var(--color-gold-dark); }
 
 .clear-all-btn {
-  width: 100%;
-  padding: 10px;
+  display: block;
+  margin: 0 auto;
+  width: auto;
+  padding: 6px 14px;
   border: 1px dashed var(--color-line);
   background: none;
   color: var(--color-text-muted);
   border-radius: var(--radius-md);
   cursor: pointer;
-  font-size: 12px;
-  min-height: 42px;
+  font-size: 11px;
+  min-height: 30px;
 }
 .clear-all-btn:active { border-color: var(--color-rust); color: var(--color-rust); }
 
@@ -412,16 +500,25 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 .add-form input[type="text"],
 .add-form input[type="url"],
 .add-form input[type="date"],
+.add-form select {
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  background: var(--color-surface);
+}
 .add-form textarea {
   padding: 11px 12px;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-md);
   color: var(--color-text);
   background: var(--color-surface);
+  resize: vertical;
 }
-.add-form textarea { resize: vertical; }
 
 .add-form input:focus,
+.add-form select:focus,
 .add-form textarea:focus {
   outline: none;
   border-color: var(--color-teal);
@@ -432,18 +529,19 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 
 .search-row { display: flex; gap: 8px; }
 .search-row input { flex: 1; min-width: 0; }
-.search-row button {
+.search-row button:not(.input-clear-btn) {
   padding: 0 16px;
   border: none;
-  background: var(--color-ink);
-  color: #fff;
-  border-radius: var(--radius-md);
+  background: var(--color-gold);
+  color: var(--color-ink);
+  border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 700;
   white-space: nowrap;
-  min-height: 44px;
+  min-height: 34px;
 }
-.search-row button:active { background: var(--color-ink-light); }
+.search-row button:not(.input-clear-btn):active { background: var(--color-gold-dark); }
 
 .search-results {
   list-style: none;
@@ -573,12 +671,14 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 .detail-value { font-size: 14px; color: var(--color-text); overflow-wrap: break-word; }
 .detail-value a { color: var(--color-teal); word-break: break-all; }
 
-.detail-actions { display: flex; gap: 10px; margin-top: 6px; }
+.detail-actions { display: flex; flex-wrap: nowrap; gap: 8px; margin-top: 6px; }
 .detail-actions .focus-btn,
 .detail-actions .delete-btn {
-  flex: 1;
-  min-height: 46px;
-  font-size: 14px;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 44px;
+  padding: 7px 4px;
+  font-size: 13px;
 }
 
 .detail-missing {
@@ -592,6 +692,137 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   align-items: center;
 }
 .detail-missing .focus-btn { padding: 10px 20px; }
+
+/* ---------- カテゴリー設定画面（categories.html） ---------- */
+
+.category-content { padding: 16px; }
+
+.category-form {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.category-form-row { display: flex; gap: 10px; }
+.category-form-row label {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  gap: 5px;
+  font-weight: 500;
+}
+.category-icon-label { width: 84px; flex-shrink: 0; }
+.category-name-label { flex: 1; min-width: 0; }
+
+.category-form-row input {
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+.category-icon-label input { text-align: center; font-size: 18px; }
+.category-form-row input:focus {
+  outline: none;
+  border-color: var(--color-teal);
+  box-shadow: 0 0 0 3px rgba(58, 125, 123, 0.15);
+}
+
+.category-form-actions { display: flex; gap: 10px; }
+#categorySaveBtn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-gold);
+  color: var(--color-ink);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  min-height: 42px;
+}
+#categorySaveBtn:active { background: var(--color-gold-dark); }
+
+.category-cancel-btn {
+  padding: 10px 16px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  min-height: 42px;
+}
+.category-cancel-btn:active { border-color: var(--color-rust); color: var(--color-rust); }
+
+.category-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.category-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 8px 12px;
+}
+.category-reorder {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.category-reorder-btn {
+  width: 26px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--color-line);
+  border-radius: 5px;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.category-reorder-btn:active { background: var(--color-line); }
+.category-reorder-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.category-reorder-btn:disabled:active { background: var(--color-paper); }
+.category-icon {
+  font-size: 20px;
+  width: 28px;
+  flex-shrink: 0;
+  text-align: center;
+}
+.category-name {
+  flex: 1;
+  min-width: 0;
+  font-family: 'Shippori Mincho', serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--color-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* ---------- アクセシビリティ ---------- */
 

@@ -80,6 +80,13 @@
     periodEl.textContent = formatPeriodLabel(place);
     card.appendChild(periodEl);
 
+    if (place.categoryId) {
+      var category = findCategoryById(loadCategories(), place.categoryId);
+      if (category) {
+        card.appendChild(buildTextRow('カテゴリー', category.icon + ' ' + category.name));
+      }
+    }
+
     if (place.address) {
       card.appendChild(buildLinkRow('住所', buildGoogleMapsUrl(place.lat, place.lng), place.address));
     }
@@ -98,8 +105,26 @@
     var mapLink = document.createElement('a');
     mapLink.className = 'focus-btn';
     mapLink.href = 'index.html?focus=' + encodeURIComponent(place.id);
-    mapLink.textContent = '地図で見る';
+    mapLink.textContent = '地図';
     actions.appendChild(mapLink);
+
+    var editLink = document.createElement('a');
+    editLink.className = 'focus-btn';
+    editLink.href = 'add.html?id=' + encodeURIComponent(place.id);
+    editLink.textContent = '編集';
+    // push ではなく replace で遷移する。詳細→編集→（保存/戻る）→詳細 という往復のたびに
+    // 履歴が積み上がるのを防ぎ、詳細画面の「戻る」で編集画面に戻ってしまうのを防ぐ。
+    editLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      window.location.replace(editLink.href);
+    });
+    actions.appendChild(editLink);
+
+    var duplicateLink = document.createElement('a');
+    duplicateLink.className = 'focus-btn';
+    duplicateLink.href = 'add.html?duplicate=' + encodeURIComponent(place.id);
+    duplicateLink.textContent = '複製';
+    actions.appendChild(duplicateLink);
 
     var delBtn = document.createElement('button');
     delBtn.type = 'button';

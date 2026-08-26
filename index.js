@@ -6,6 +6,7 @@
   'use strict';
 
   var places = loadPlaces();
+  var categories = loadCategories();
   var dateFilteredPlaces = []; // 期間の条件に一致する場所（地図上のピン全体）
   var map = null;
   var markersLayer = null;
@@ -13,13 +14,14 @@
   var els = {
     mapSearchQuery: document.getElementById('mapSearchQuery'),
     mapSearchBtn: document.getElementById('mapSearchBtn'),
+    mapSearchClearBtn: document.getElementById('mapSearchClearBtn'),
     mapSearchResults: document.getElementById('mapSearchResults'),
     viewDate: document.getElementById('viewDate'),
     todayBtn: document.getElementById('todayBtn'),
     clearDateBtn: document.getElementById('clearDateBtn'),
+    categoryFilter: document.getElementById('categoryFilter'),
     placeList: document.getElementById('placeList'),
     placeCount: document.getElementById('placeCount'),
-    clearAllBtn: document.getElementById('clearAllBtn'),
   };
 
   init();
@@ -27,8 +29,26 @@
   function init() {
     initMap();
     bindEvents();
-    refreshMarkersForDateFilter();
+    populateCategoryFilterOptions();
+    updateMapSearchClearVisibility();
+    refreshMarkersForDateFilter(true); // 初回表示時のみ、全ピンが収まるように表示範囲を合わせる
     handleFocusParam();
+  }
+
+  // カテゴリー一覧を絞り込み用の選択肢として反映する。
+  // 「未設定」はどのカテゴリーにも属さない特別な選択肢のため、一覧の最後に追加する。
+  function populateCategoryFilterOptions() {
+    categories.forEach(function (c) {
+      var option = document.createElement('option');
+      option.value = c.id;
+      option.textContent = c.icon + ' ' + c.name;
+      els.categoryFilter.appendChild(option);
+    });
+
+    var unsetOption = document.createElement('option');
+    unsetOption.value = UNSET_CATEGORY_FILTER_VALUE;
+    unsetOption.textContent = '未設定';
+    els.categoryFilter.appendChild(unsetOption);
   }
 
   function initMap() {
@@ -53,30 +73,40 @@
         onMapSearch();
       }
     });
+    els.mapSearchQuery.addEventListener('input', updateMapSearchClearVisibility);
 
-    els.viewDate.addEventListener('change', refreshMarkersForDateFilter);
+    els.mapSearchClearBtn.addEventListener('click', function () {
+      els.mapSearchQuery.value = '';
+      els.mapSearchResults.innerHTML = ''; // 検索結果も閉じる
+      updateMapSearchClearVisibility();
+      els.mapSearchQuery.focus();
+    });
+
+    // 日付の変更では、現在の地図の表示範囲（パン・ズーム）を維持する
+    els.viewDate.addEventListener('change', function () {
+      refreshMarkersForDateFilter(false);
+    });
 
     els.todayBtn.addEventListener('click', function () {
       els.viewDate.value = formatDate(new Date());
-      refreshMarkersForDateFilter();
+      refreshMarkersForDateFilter(false);
     });
 
     els.clearDateBtn.addEventListener('click', function () {
       els.viewDate.value = '';
-      refreshMarkersForDateFilter();
+      refreshMarkersForDateFilter(false);
     });
 
-    els.clearAllBtn.addEventListener('click', function () {
-      if (places.length === 0) return;
-      if (confirm('保存されている場所を全て削除します。よろしいですか？')) {
-        places = [];
-        savePlaces(places);
-        refreshMarkersForDateFilter();
-      }
+    els.categoryFilter.addEventListener('change', function () {
+      refreshMarkersForDateFilter(false);
     });
   }
 
   // ---------- 地図上を移動するための検索（場所の登録は行わない） ----------
+
+  function updateMapSearchClearVisibility() {
+    els.mapSearchClearBtn.hidden = !els.mapSearchQuery.value;
+  }
 
   function onMapSearch() {
     var q = els.mapSearchQuery.value.trim();
@@ -91,6 +121,7 @@
           var lng = parseFloat(r.lon);
           els.mapSearchResults.innerHTML = '';
           els.mapSearchQuery.value = r.display_name.split(',')[0];
+          updateMapSearchClearVisibility();
           map.setView([lat, lng], 15); // moveend 経由で下部リストも更新される
         });
       })
@@ -110,16 +141,20 @@
     return getViewDate() || formatDate(new Date());
   }
 
-  // 期間の条件に合わせてピンを張り直す（日付変更・今日・すべて・追加・削除のたびに呼ぶ）
+  // 期間の条件に合わせてピンを張り直す（日付変更・今日・すべて・カテゴリー・追加・削除のたびに呼ぶ）
   // 期限が設定されていない場所や、開始日/終了日の片方のみ設定された場所も isActiveOn の
   // ルールに従って表示・非表示が決まる。
-  function refreshMarkersForDateFilter() {
+  // fitBoundsToResults に true を渡した場合のみ、表示範囲をピンに合わせて調整する
+  // （初回表示時のみ true にし、日付・カテゴリーの変更時は現在の表示範囲を維持する）。
+  function refreshMarkersForDateFilter(fitBoundsToResults) {
     var viewDate = getViewDate();
     var referenceDate = getReferenceDate();
+    var categoryId = els.categoryFilter.value;
 
-    dateFilteredPlaces = viewDate
-      ? places.filter(function (p) { return isActiveOn(p, viewDate); })
-      : places.slice();
+    dateFilteredPlaces = places.filter(function (p) {
+      if (!matchesCategoryFilter(categoryId, p.categoryId)) return false;
+      return viewDate ? isActiveOn(p, viewDate) : true;
+    });
 
     markersLayer.clearLayers();
     dateFilteredPlaces.forEach(function (p) {
@@ -128,7 +163,7 @@
       marker.bindPopup(buildPopupContent(p));
     });
 
-    if (dateFilteredPlaces.length > 0) {
+    if (fitBoundsToResults && dateFilteredPlaces.length > 0) {
       var bounds = L.latLngBounds(dateFilteredPlaces.map(function (p) { return [p.lat, p.lng]; }));
       map.fitBounds(bounds.pad(0.3), { maxZoom: 12 });
     }
@@ -158,7 +193,7 @@
   function deletePlace(id) {
     places = places.filter(function (p) { return p.id !== id; });
     savePlaces(places);
-    refreshMarkersForDateFilter();
+    refreshMarkersForDateFilter(true);
   }
 
   // ---------- 地図の表示範囲に応じた下部リストの更新 ----------
@@ -192,9 +227,7 @@
       return;
     }
 
-    var sorted = visiblePlaces.slice().sort(function (a, b) {
-      return a.startDate.localeCompare(b.startDate);
-    });
+    var sorted = visiblePlaces.slice().sort(comparePlaces);
 
     sorted.forEach(function (p) {
       var li = document.createElement('li');
@@ -212,6 +245,16 @@
           goToDetail();
         }
       });
+
+      var category = findCategoryById(categories, p.categoryId);
+      var iconEl = document.createElement('span');
+      iconEl.className = 'place-category-icon';
+      if (category) {
+        iconEl.textContent = category.icon;
+      } else {
+        iconEl.setAttribute('aria-hidden', 'true'); // 見た目の位置揃え用の空欄なので読み上げ対象外にする
+      }
+      li.appendChild(iconEl);
 
       var infoEl = document.createElement('div');
       infoEl.className = 'place-info';
@@ -234,7 +277,7 @@
       var focusBtn = document.createElement('button');
       focusBtn.type = 'button';
       focusBtn.className = 'focus-btn';
-      focusBtn.textContent = '地図で見る';
+      focusBtn.textContent = '地図';
       focusBtn.addEventListener('click', function (e) {
         e.stopPropagation();
         map.setView([p.lat, p.lng], 15);
@@ -275,7 +318,7 @@
 
     // 期間指定があるとフォーカス対象が表示されない場合があるため、いったん解除する
     els.viewDate.value = '';
-    refreshMarkersForDateFilter();
+    refreshMarkersForDateFilter(false); // 直後に setView するため、ここでの表示範囲調整は不要
 
     map.setView([target.lat, target.lng], 15);
     markersLayer.eachLayer(function (m) {

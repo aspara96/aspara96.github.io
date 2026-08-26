@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1d2b3a">
-<title>行き先を登録 | 行きたい場所マップ</title>
+<title>行き先登録 | 行きたい場所マップ</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,8 +17,15 @@
   <div class="app">
 
     <header class="app-header add-header">
-      <a href="index.html" class="back-btn" aria-label="地図に戻る">&#8592;</a>
-      <h1>行き先を登録</h1>
+      <a href="index.html" class="back-btn" id="backBtn" aria-label="地図に戻る">&#8592;</a>
+      <h1 id="pageTitle">行き先登録</h1>
+      <button type="button" id="navMenuBtn" class="nav-menu-btn" aria-label="メニュー" aria-expanded="false" aria-controls="navMenu">&#9776;</button>
+      <nav id="navMenu" class="nav-menu" hidden>
+        <a href="index.html">ホーム</a>
+        <a href="list.html">登録済み行き先一覧</a>
+        <a href="add.html">行き先登録</a>
+        <a href="categories.html">カテゴリー設定</a>
+      </nav>
     </header>
 
     <main class="main-content add-content">
@@ -32,7 +39,10 @@
 
         <label for="placeAddress">住所・地名
           <div class="search-row">
-            <input type="text" id="placeAddress" required placeholder="例: 京都府京都市東山区清水1丁目294">
+            <div class="input-clear-wrap">
+              <input type="text" id="placeAddress" required placeholder="例: 京都府京都市東山区清水1丁目294">
+              <button type="button" id="addressClearBtn" class="input-clear-btn" aria-label="住所を消去" hidden>&times;</button>
+            </div>
             <button type="button" id="searchBtn">検索</button>
           </div>
         </label>
@@ -42,6 +52,13 @@
         <label for="placeUrl">参考URL（任意）
           <input type="url" id="placeUrl" placeholder="https://...">
         </label>
+
+        <label for="placeCategory">カテゴリー（任意）
+          <select id="placeCategory">
+            <option value="">選択しない</option>
+          </select>
+        </label>
+        <p class="hint">カテゴリーの追加・編集は<a href="categories.html">カテゴリー設定</a>から行えます。</p>
 
         <div class="date-range">
           <label for="startDate">開始日（任意）

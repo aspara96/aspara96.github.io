@@ -1,5 +1,9 @@
 // add.js
-// 追加画面（add.html）専用の処理です。
+// 行き先の登録・編集画面（add.html）専用の処理です。
+// URLに ?id={id} が付いている場合は「編集モード」として動作し、既存の行き先を
+// 上書き保存します（詳細画面の「編集」ボタンから遷移してくる想定）。
+// パラメータがない場合は通常の「新規登録モード」です。
+//
 // 場所の指定は「住所」欄への入力を正としつつ、検索結果の選択や地図タップでも
 // 住所欄を自動入力できるようにしています。
 // 住所からの座標検索には common.js の addressSearch（国土地理院→Nominatimの順で検索）を
@@ -15,11 +19,18 @@
   var map = null;
   var marker = null;
 
+  var isEditMode = false;
+  var editingId = null;
+
   var els = {
     form: document.getElementById('placeForm'),
+    pageTitle: document.getElementById('pageTitle'),
+    backBtn: document.getElementById('backBtn'),
     name: document.getElementById('placeName'),
     address: document.getElementById('placeAddress'),
+    addressClearBtn: document.getElementById('addressClearBtn'),
     url: document.getElementById('placeUrl'),
+    category: document.getElementById('placeCategory'),
     searchBtn: document.getElementById('searchBtn'),
     searchResults: document.getElementById('searchResults'),
     startDate: document.getElementById('startDate'),
@@ -34,7 +45,37 @@
     // 期間は任意項目のため、初期値は空欄のままにする
     initMap();
     bindEvents();
+    populateCategoryOptions();
+
+    var params = new URLSearchParams(window.location.search);
+    var id = params.get('id');
+    var duplicateId = params.get('duplicate');
+
+    if (id) {
+      var place = loadPlaces().find(function (p) { return p.id === id; });
+      if (place) {
+        enterEditMode(place);
+      }
+    } else if (duplicateId) {
+      var sourcePlace = loadPlaces().find(function (p) { return p.id === duplicateId; });
+      if (sourcePlace) {
+        enterDuplicateMode(sourcePlace);
+      }
+    }
+
     updateSaveButtonState();
+    updateAddressClearVisibility();
+  }
+
+  // カテゴリー一覧を選択肢として反映する（未作成なら「選択しない」のみ）
+  function populateCategoryOptions() {
+    var categories = loadCategories();
+    categories.forEach(function (c) {
+      var option = document.createElement('option');
+      option.value = c.id;
+      option.textContent = c.icon + ' ' + c.name;
+      els.category.appendChild(option);
+    });
   }
 
   function initMap() {
@@ -64,10 +105,93 @@
     els.address.addEventListener('input', function () {
       confirmedLocation = null;
       updateSaveButtonState();
+      updateAddressClearVisibility();
     });
 
     // 住所欄から離れたタイミングで、検索結果を選ばなくても自動的にピンを立てる
     els.address.addEventListener('blur', onAddressBlur);
+
+    els.addressClearBtn.addEventListener('click', function () {
+      els.address.value = '';
+      confirmedLocation = null;
+      els.searchResults.innerHTML = '';
+      if (marker) {
+        map.removeLayer(marker);
+        marker = null;
+      }
+      updateSaveButtonState();
+      updateAddressClearVisibility();
+      els.address.focus();
+    });
+  }
+
+  function updateAddressClearVisibility() {
+    els.addressClearBtn.hidden = !els.address.value;
+  }
+
+  // ---------- 編集モードへの切り替え ----------
+
+  function enterEditMode(place) {
+    isEditMode = true;
+    editingId = place.id;
+
+    els.pageTitle.textContent = '行き先編集';
+    document.title = '行き先編集 | 行きたい場所マップ';
+    els.saveBtn.textContent = getSaveLabel();
+
+    // 編集画面からの「戻る」は詳細画面に戻す。history.pushState ではなく replace を使うことで、
+    // 「詳細→編集→詳細」という往復が履歴に余計な1件として残らないようにする
+    // （残ると、詳細画面で戻るボタンを押したときに編集画面へ戻ってしまう）。
+    var backUrl = 'detail.html?id=' + encodeURIComponent(place.id);
+    els.backBtn.href = backUrl;
+    els.backBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      window.location.replace(backUrl);
+    });
+
+    els.name.value = place.name || '';
+    els.address.value = place.address || '';
+    els.url.value = place.url || '';
+    els.category.value = place.categoryId || '';
+    els.startDate.value = place.startDate || '';
+    els.endDate.value = place.endDate || '';
+    els.memo.value = place.memo || '';
+    updateAddressClearVisibility();
+
+    // 既存の座標はそのまま確定済みとして扱う（住所欄を編集しない限り再検索しない）
+    confirmedLocation = { lat: place.lat, lng: place.lng };
+    placeMarkerAt(place.lat, place.lng);
+    map.setView([place.lat, place.lng], 15);
+  }
+
+  function getSaveLabel() {
+    return isEditMode ? '更新' : '登録';
+  }
+
+  // 詳細画面の「複製」から遷移してきた場合：内容を事前入力するが、編集モードにはしない
+  // （isEditMode は false のままなので、保存すると新しいIDの行き先として登録される）
+  function enterDuplicateMode(sourcePlace) {
+    els.name.value = sourcePlace.name || '';
+    els.address.value = sourcePlace.address || '';
+    els.url.value = sourcePlace.url || '';
+    els.category.value = sourcePlace.categoryId || '';
+    els.startDate.value = sourcePlace.startDate || '';
+    els.endDate.value = sourcePlace.endDate || '';
+    els.memo.value = sourcePlace.memo || '';
+    updateAddressClearVisibility();
+
+    // 複製元と同じ座標をそのまま確定済みとして扱う（住所欄を編集しない限り再検索しない）
+    confirmedLocation = { lat: sourcePlace.lat, lng: sourcePlace.lng };
+    placeMarkerAt(sourcePlace.lat, sourcePlace.lng);
+    map.setView([sourcePlace.lat, sourcePlace.lng], 15);
+
+    // 複製元の詳細画面に「戻る」で戻れるようにする（履歴を余計に積まない理由は enterEditMode 参照）
+    var backUrl = 'detail.html?id=' + encodeURIComponent(sourcePlace.id);
+    els.backBtn.href = backUrl;
+    els.backBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      window.location.replace(backUrl);
+    });
   }
 
   function updateSaveButtonState() {
@@ -127,6 +251,7 @@
         var address = data && data.display_name ? data.display_name : '';
         if (address) {
           els.address.value = address; // .value での設定なので input イベントは発火しない
+          updateAddressClearVisibility();
           if (!els.name.value) {
             els.name.value = address.split(',')[0];
           }
@@ -154,6 +279,7 @@
           var lng = parseFloat(r.lon);
 
           els.address.value = r.display_name; // .value での設定なので input イベントは発火しない
+          updateAddressClearVisibility();
           confirmedLocation = { lat: lat, lng: lng };
           updateSaveButtonState();
 
@@ -197,9 +323,11 @@
       url = 'https://' + url;
     }
 
+    var categoryId = els.category.value;
+
     if (confirmedLocation) {
       // 検索選択・地図タップ・住所の自動解決済みで、住所欄も編集されていない → その座標をそのまま使う
-      finishSave(name, address, confirmedLocation.lat, confirmedLocation.lng, startDate, endDate, url);
+      finishSave(name, address, confirmedLocation.lat, confirmedLocation.lng, startDate, endDate, url, categoryId);
       return;
     }
 
@@ -209,17 +337,48 @@
 
     resolveAddressLocation(address)
       .then(function (loc) {
-        finishSave(name, address, loc.lat, loc.lng, startDate, endDate, url);
+        finishSave(name, address, loc.lat, loc.lng, startDate, endDate, url, categoryId);
       })
       .catch(function () {
         els.saveBtn.disabled = false;
-        els.saveBtn.textContent = 'この場所を保存';
+        els.saveBtn.textContent = getSaveLabel();
         alert('入力された住所から場所を特定できませんでした。住所を見直すか、検索結果の選択・地図タップをお試しください。');
       });
   }
 
-  function finishSave(name, address, lat, lng, startDate, endDate, url) {
-    var place = {
+  function finishSave(name, address, lat, lng, startDate, endDate, url, categoryId) {
+    var memo = els.memo.value.trim();
+    var places = loadPlaces();
+
+    if (isEditMode) {
+      var idx = places.findIndex(function (p) { return p.id === editingId; });
+      var updatedPlace = {
+        id: editingId,
+        name: name,
+        address: address,
+        lat: lat,
+        lng: lng,
+        startDate: startDate, // 空文字の場合あり
+        endDate: endDate,     // 空文字の場合あり
+        memo: memo,
+        url: url,
+        categoryId: categoryId, // 空文字の場合あり（未選択）
+      };
+
+      if (idx !== -1) {
+        places[idx] = updatedPlace;
+      } else {
+        // 万一元のデータが見つからない場合（他タブで削除された等）は新規として追加する
+        places.push(updatedPlace);
+      }
+      savePlaces(places);
+
+      // 更新後は詳細画面に戻る（replace により編集画面を履歴に残さない。理由は enterEditMode 内のコメント参照）
+      window.location.replace('detail.html?id=' + encodeURIComponent(editingId));
+      return;
+    }
+
+    places.push({
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
       name: name,
       address: address,
@@ -227,15 +386,13 @@
       lng: lng,
       startDate: startDate, // 空文字の場合あり
       endDate: endDate,     // 空文字の場合あり
-      memo: els.memo.value.trim(),
+      memo: memo,
       url: url,
-    };
-
-    var places = loadPlaces();
-    places.push(place);
+      categoryId: categoryId, // 空文字の場合あり（未選択）
+    });
     savePlaces(places);
 
-    // 保存後は一覧画面に戻る
+    // 新規登録後は一覧画面に戻る
     window.location.href = 'index.html';
   }
 })();

@@ -1,10 +1,11 @@
 // common.js
-// index.html / add.html / list.html / detail.html すべてから読み込む共通処理です。
+// index.html / add.html / list.html / detail.html / categories.html すべてから読み込む共通処理です。
 // 保存データの読み書き、日付・期間の判定、地図ピンのアイコン生成、地名検索(Nominatim)などをまとめています。
 
 var STORAGE_KEY = 'ikitai_places_v1';
+var CATEGORIES_STORAGE_KEY = 'ikitai_categories_v1';
 
-// ---------- 保存データ ----------
+// ---------- 保存データ（行き先） ----------
 
 function loadPlaces() {
   try {
@@ -24,6 +25,55 @@ function savePlaces(places) {
     console.error('保存エラー', e);
     return false;
   }
+}
+
+// ---------- 保存データ（カテゴリー） ----------
+// カテゴリーは { id, icon, name } の配列。行き先(Place)側は categoryId でこれを参照する。
+
+function loadCategories() {
+  try {
+    var raw = localStorage.getItem(CATEGORIES_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.error('読み込みエラー', e);
+    return [];
+  }
+}
+
+function saveCategories(categories) {
+  try {
+    localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(categories));
+    return true;
+  } catch (e) {
+    console.error('保存エラー', e);
+    return false;
+  }
+}
+
+function findCategoryById(categories, id) {
+  if (!id) return null;
+  for (var i = 0; i < categories.length; i++) {
+    if (categories[i].id === id) return categories[i];
+  }
+  return null;
+}
+
+// ---------- カテゴリー絞り込み ----------
+// index.html / list.html のカテゴリー絞り込みセレクトで使う値の意味づけ。
+// セレクトの value は以下の3パターンのいずれかを取る:
+//   ''（空文字）                    → すべてのカテゴリーを対象にする（絞り込みなし）
+//   UNSET_CATEGORY_FILTER_VALUE    → カテゴリーが未設定の行き先のみを対象にする
+//   それ以外（実際のカテゴリーID）    → そのカテゴリーが設定された行き先のみを対象にする
+// 実際のカテゴリーIDは Date.now().toString(36) + Math.random()... で生成される文字列のため、
+// この固定文字列と衝突することはない。
+var UNSET_CATEGORY_FILTER_VALUE = '__none__';
+
+// categoryFilterValue: カテゴリー絞り込みセレクトの現在値
+// placeCategoryId: 行き先の categoryId（未設定の場合は空文字）
+function matchesCategoryFilter(categoryFilterValue, placeCategoryId) {
+  if (!categoryFilterValue) return true; // すべて
+  if (categoryFilterValue === UNSET_CATEGORY_FILTER_VALUE) return !placeCategoryId;
+  return placeCategoryId === categoryFilterValue;
 }
 
 // ---------- 日付 ----------
@@ -99,6 +149,23 @@ function getPinColorClass(place, referenceDate) {
   if (isPastDeadline(place)) return 'marker-black';
   if (isEndingSoon(place, referenceDate)) return 'marker-red';
   return 'marker-blue';
+}
+
+// 行き先の並び替え（一覧画面・地図画面下部リストで共通）
+// 1. 終了日の昇順（未設定は下） 2. 開始日の昇順（未設定は下）
+function comparePlaces(a, b) {
+  var byEnd = compareDateAscEmptyLast(a.endDate, b.endDate);
+  if (byEnd !== 0) return byEnd;
+  return compareDateAscEmptyLast(a.startDate, b.startDate);
+}
+
+function compareDateAscEmptyLast(dateA, dateB) {
+  var hasA = !!dateA;
+  var hasB = !!dateB;
+  if (hasA && hasB) return dateA < dateB ? -1 : (dateA > dateB ? 1 : 0);
+  if (hasA && !hasB) return -1; // 設定されている方が先
+  if (!hasA && hasB) return 1;
+  return 0; // どちらも未設定
 }
 
 // ---------- 地図ピン ----------
@@ -214,3 +281,49 @@ function renderSearchResultsList(resultsEl, results, onSelect) {
     resultsEl.appendChild(li);
   });
 }
+
+// ---------- ナビゲーションメニュー（全画面共通のハンバーガーメニュー） ----------
+// #navMenuBtn / #navMenu が存在するページでのみ動作する。各ページのJSを個別に
+// 変更しなくて済むよう、common.js の読み込み時に自動的に初期化される。
+(function () {
+  function initNavMenu() {
+    var btn = document.getElementById('navMenuBtn');
+    var menu = document.getElementById('navMenu');
+    if (!btn || !menu) return;
+
+    // 現在のページに対応するリンクを強調表示する
+    var currentPage = window.location.pathname.split('/').pop();
+    if (!currentPage) currentPage = 'index.html';
+    var links = menu.querySelectorAll('a');
+    for (var i = 0; i < links.length; i++) {
+      if (links[i].getAttribute('href') === currentPage) {
+        links[i].classList.add('current-page');
+      }
+    }
+
+    function closeMenu() {
+      menu.hidden = true;
+      btn.setAttribute('aria-expanded', 'false');
+    }
+
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var willOpen = menu.hidden;
+      menu.hidden = !willOpen;
+      btn.setAttribute('aria-expanded', String(willOpen));
+    });
+
+    // メニューの外側をタップしたら閉じる
+    document.addEventListener('click', function (e) {
+      if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) {
+        closeMenu();
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNavMenu);
+  } else {
+    initNavMenu();
+  }
+})();

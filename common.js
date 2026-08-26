@@ -58,6 +58,24 @@ function findCategoryById(categories, id) {
   return null;
 }
 
+// ---------- カテゴリー絞り込み ----------
+// index.html / list.html のカテゴリー絞り込みセレクトで使う値の意味づけ。
+// セレクトの value は以下の3パターンのいずれかを取る:
+//   ''（空文字）                    → すべてのカテゴリーを対象にする（絞り込みなし）
+//   UNSET_CATEGORY_FILTER_VALUE    → カテゴリーが未設定の行き先のみを対象にする
+//   それ以外（実際のカテゴリーID）    → そのカテゴリーが設定された行き先のみを対象にする
+// 実際のカテゴリーIDは Date.now().toString(36) + Math.random()... で生成される文字列のため、
+// この固定文字列と衝突することはない。
+var UNSET_CATEGORY_FILTER_VALUE = '__none__';
+
+// categoryFilterValue: カテゴリー絞り込みセレクトの現在値
+// placeCategoryId: 行き先の categoryId（未設定の場合は空文字）
+function matchesCategoryFilter(categoryFilterValue, placeCategoryId) {
+  if (!categoryFilterValue) return true; // すべて
+  if (categoryFilterValue === UNSET_CATEGORY_FILTER_VALUE) return !placeCategoryId;
+  return placeCategoryId === categoryFilterValue;
+}
+
 // ---------- 日付 ----------
 
 function formatDate(d) {
@@ -309,4 +327,3 @@ function renderSearchResultsList(resultsEl, results, onSelect) {
     initNavMenu();
   }
 })();
-

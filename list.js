@@ -35,7 +35,9 @@
 
   // カテゴリー一覧を絞り込み用の選択肢として反映する。
   // インポートで新しいカテゴリーが追加された場合にも呼び直せるよう、
-  // 既存の動的オプション（先頭の「すべてのカテゴリー」を除く）を一旦クリアしてから再構築する。
+  // 先頭の「すべてのカテゴリー」を除く全オプションを一旦クリアしてから再構築する。
+  // 「未設定」はどのカテゴリーにも属さない特別な選択肢のため、カテゴリー一覧の
+  // 最後に追加する（＝カテゴリーの増減があっても常に末尾に位置する）。
   function populateCategoryFilterOptions() {
     while (els.categoryFilter.options.length > 1) {
       els.categoryFilter.remove(1);
@@ -46,6 +48,11 @@
       option.textContent = c.icon + ' ' + c.name;
       els.categoryFilter.appendChild(option);
     });
+
+    var unsetOption = document.createElement('option');
+    unsetOption.value = UNSET_CATEGORY_FILTER_VALUE;
+    unsetOption.textContent = '未設定';
+    els.categoryFilter.appendChild(unsetOption);
   }
 
   function bindEvents() {
@@ -311,13 +318,14 @@
   }
 
   // 名前・住所・メモを対象に大文字小文字を区別せず部分一致で絞り込む。
-  // カテゴリーが選択されている場合は、そのカテゴリーの行き先のみに絞り込む。
+  // カテゴリーが選択されている場合は、そのカテゴリーの行き先のみに絞り込む
+  // （「未設定」が選択されている場合は categoryId が空の行き先のみに絞り込む）。
   function getFilteredPlaces() {
     var query = els.searchQuery.value.trim().toLowerCase();
     var categoryId = els.categoryFilter.value;
 
     return places.filter(function (p) {
-      if (categoryId && p.categoryId !== categoryId) return false;
+      if (!matchesCategoryFilter(categoryId, p.categoryId)) return false;
       if (!query) return true;
       var haystack = [p.name, p.address, p.memo].filter(Boolean).join(' ').toLowerCase();
       return haystack.indexOf(query) !== -1;

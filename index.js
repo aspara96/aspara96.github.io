@@ -59,10 +59,34 @@
       maxZoom: 19,
     }).addTo(map);
 
-    markersLayer = L.layerGroup().addTo(map);
+    // ピンの密集対策: 近接するピンは自動的にクラスター（数字入りの丸）にまとめる。
+    // 独自の見た目（createClusterIcon）を使うため MarkerCluster.Default.css は読み込んでいない
+    // （MarkerCluster.css のみ。スパイダーファイ時のアニメーション・脚線に必要）。
+    markersLayer = L.markerClusterGroup({
+      maxClusterRadius: 60,
+      showCoverageOnHover: false, // タップ操作前提のため、ホバー時の範囲表示は不要
+      iconCreateFunction: createClusterIcon,
+    }).addTo(map);
 
     // 地図の表示範囲が変わるたび、下部のリストを再計算する
     map.on('moveend', updateVisibleList);
+  }
+
+  // クラスターアイコンの見た目。件数に応じて3段階のサイズ・配色で見せる
+  // （少ない=ゴールド、中間=濃いゴールド、多い=紺。アプリの配色に合わせている）。
+  function createClusterIcon(cluster) {
+    var count = cluster.getChildCount();
+    var sizeClass = 'cluster-size-s';
+    if (count >= 50) {
+      sizeClass = 'cluster-size-l';
+    } else if (count >= 10) {
+      sizeClass = 'cluster-size-m';
+    }
+    return L.divIcon({
+      html: '<div class="place-cluster-inner ' + sizeClass + '">' + count + '</div>',
+      className: 'place-cluster',
+      iconSize: [40, 40],
+    });
   }
 
   function bindEvents() {
@@ -280,13 +304,7 @@
       focusBtn.textContent = '地図';
       focusBtn.addEventListener('click', function (e) {
         e.stopPropagation();
-        map.setView([p.lat, p.lng], 15);
-        markersLayer.eachLayer(function (m) {
-          var ll = m.getLatLng();
-          if (Math.abs(ll.lat - p.lat) < 1e-6 && Math.abs(ll.lng - p.lng) < 1e-6) {
-            m.openPopup();
-          }
-        });
+        focusOnMarkerAt(p.lat, p.lng);
       });
       actions.appendChild(focusBtn);
 
@@ -318,18 +336,39 @@
 
     // 期間指定があるとフォーカス対象が表示されない場合があるため、いったん解除する
     els.viewDate.value = '';
-    refreshMarkersForDateFilter(false); // 直後に setView するため、ここでの表示範囲調整は不要
+    refreshMarkersForDateFilter(false); // 直後に focusOnMarkerAt 内で setView するため、ここでの表示範囲調整は不要
 
-    map.setView([target.lat, target.lng], 15);
-    markersLayer.eachLayer(function (m) {
-      var ll = m.getLatLng();
-      if (Math.abs(ll.lat - target.lat) < 1e-6 && Math.abs(ll.lng - target.lng) < 1e-6) {
-        m.openPopup();
-      }
-    });
+    focusOnMarkerAt(target.lat, target.lng);
 
     if (window.history && window.history.replaceState) {
       window.history.replaceState(null, '', 'index.html');
     }
+  }
+
+  // 指定した座標に対応するマーカーを探す（クラスター内にまとめられていても見つかる。
+  // マーカー自体は常に markersLayer に保持されており、クラスターは表示上の見せ方でしかないため）。
+  function findMarkerAt(lat, lng) {
+    var found = null;
+    markersLayer.eachLayer(function (m) {
+      var ll = m.getLatLng();
+      if (Math.abs(ll.lat - lat) < 1e-6 && Math.abs(ll.lng - lng) < 1e-6) {
+        found = m;
+      }
+    });
+    return found;
+  }
+
+  // 指定した座標のマーカーへズームし、ポップアップを開く。
+  // 対象が現在クラスターにまとめられている場合は zoomToShowLayer が必要な分だけ
+  // 自動的にズームイン（またはスパイダーファイ）してからコールバックを呼ぶため、
+  // クラスター化されていても確実にポップアップを開ける。
+  function focusOnMarkerAt(lat, lng) {
+    var marker = findMarkerAt(lat, lng);
+    if (!marker) return;
+
+    map.setView([lat, lng], 15);
+    markersLayer.zoomToShowLayer(marker, function () {
+      marker.openPopup();
+    });
   }
 })();

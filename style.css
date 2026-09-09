@@ -608,6 +608,46 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   box-shadow: 0 0 0 5px rgba(192, 138, 46, 0.28);
 }
 
+/* ---------- 地図ピンのクラスター（密集対策） ---------- */
+/* 件数に応じて3段階の見た目にする: 少ない=ゴールド、中間=濃いゴールド、多い=紺。
+   L.divIcon の className をこの独自クラスにしているため、Leafletの既定スタイル
+   （.leaflet-div-icon の白背景など）は当たらない。iconSize指定により、内側の円の
+   サイズに関わらずアンカー座標（マーカーの実際の位置）を中心に描画される。 */
+.place-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.place-cluster-inner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  color: var(--color-ink);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+.place-cluster-inner.cluster-size-m {
+  width: 40px;
+  height: 40px;
+  font-size: 13px;
+  background: var(--color-gold-dark);
+  color: #fff;
+}
+.place-cluster-inner.cluster-size-l {
+  width: 46px;
+  height: 46px;
+  font-size: 14px;
+  background: var(--color-ink);
+  color: var(--color-gold);
+}
+
 .leaflet-popup-content-wrapper {
   border-radius: var(--radius-md);
   font-family: 'Noto Sans JP', sans-serif;

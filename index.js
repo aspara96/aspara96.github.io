@@ -60,12 +60,12 @@
     }).addTo(map);
 
     // ピンの密集対策: 近接するピンは自動的にクラスター（数字入りの丸）にまとめる。
-    // maxClusterRadius はかなり小さめ（15px）にしており、ピン同士がほぼ重なる距離に
-    // ある場合のみクラスター化する（軽く近い程度では個々のピンのまま表示する）。
+    // maxClusterRadius は小さめ（20px）にしており、ピン同士がほぼ重なる距離にある
+    // 場合のみクラスター化する（軽く近い程度では個々のピンのまま表示する）。
     // 独自の見た目（createClusterIcon）を使うため MarkerCluster.Default.css は読み込んでいない
     // （MarkerCluster.css のみ。スパイダーファイ時のアニメーション・脚線に必要）。
     markersLayer = L.markerClusterGroup({
-      maxClusterRadius: 15,
+      maxClusterRadius: 20,
       showCoverageOnHover: false, // タップ操作前提のため、ホバー時の範囲表示は不要
       iconCreateFunction: createClusterIcon,
     }).addTo(map);

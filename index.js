@@ -75,7 +75,9 @@
   }
 
   // クラスターアイコンの見た目。
-  // サイズは件数に応じて3段階（見やすさのため）。
+  // サイズは「件数の桁数」に応じて最低限だけ大きくする（1桁なら基準サイズ、桁が
+  // 1つ増えるごとに、その数字が収まる分だけ一定量ずつ拡大する。10件と40件のように
+  // 桁数が同じ場合はサイズを変えない）。
   // 色は個々のピンと同じ考え方で、クラスターに含まれる場所の期限状態から決める
   // （優先順位: 1ヶ月以内に終了するものが1件でもあれば赤 > 期限切れのものしかなければ黒 > それ以外は青）。
   function createClusterIcon(cluster) {
@@ -101,16 +103,15 @@
     }
 
     var count = cluster.getChildCount();
-    var sizeClass = 'cluster-size-s';
-    if (count >= 50) {
-      sizeClass = 'cluster-size-l';
-    } else if (count >= 10) {
-      sizeClass = 'cluster-size-m';
-    }
+    var digits = String(count).length;
+    // 1桁を基準（28px・12px）とし、桁が1つ増えるごとに最低限（6px・1px）だけ拡大する
+    var size = 28 + (digits - 1) * 6;
+    var fontSize = 12 + (digits - 1) * 1;
+
     return L.divIcon({
-      html: '<div class="place-cluster-inner ' + sizeClass + ' ' + colorClass + '">' + count + '</div>',
+      html: '<div class="place-cluster-inner ' + colorClass + '" style="width:' + size + 'px;height:' + size + 'px;font-size:' + fontSize + 'px;">' + count + '</div>',
       className: 'place-cluster',
-      iconSize: [40, 40],
+      iconSize: [size, size],
     });
   }
 

@@ -630,7 +630,7 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #fff;
+  border: 2px solid var(--color-gold);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 /* 色（期限状態による。個々のピンの --color-pin-* と揃えている） */

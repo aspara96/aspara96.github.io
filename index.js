@@ -60,12 +60,12 @@
     }).addTo(map);
 
     // ピンの密集対策: 近接するピンは自動的にクラスター（数字入りの丸）にまとめる。
-    // maxClusterRadius は小さめ（20px）にしており、ピン同士がほぼ重なる距離にある
-    // 場合のみクラスター化する（軽く近い程度では個々のピンのまま表示する）。
+    // maxClusterRadius はかなり小さめ（15px）にしており、ピン同士がほぼ重なる距離に
+    // ある場合のみクラスター化する（軽く近い程度では個々のピンのまま表示する）。
     // 独自の見た目（createClusterIcon）を使うため MarkerCluster.Default.css は読み込んでいない
     // （MarkerCluster.css のみ。スパイダーファイ時のアニメーション・脚線に必要）。
     markersLayer = L.markerClusterGroup({
-      maxClusterRadius: 20,
+      maxClusterRadius: 15,
       showCoverageOnHover: false, // タップ操作前提のため、ホバー時の範囲表示は不要
       iconCreateFunction: createClusterIcon,
     }).addTo(map);
@@ -74,9 +74,32 @@
     map.on('moveend', updateVisibleList);
   }
 
-  // クラスターアイコンの見た目。件数に応じて3段階のサイズ・配色で見せる
-  // （少ない=ゴールド、中間=濃いゴールド、多い=紺。アプリの配色に合わせている）。
+  // クラスターアイコンの見た目。
+  // サイズは件数に応じて3段階（見やすさのため）。
+  // 色は個々のピンと同じ考え方で、クラスターに含まれる場所の期限状態から決める
+  // （優先順位: 1ヶ月以内に終了するものが1件でもあれば赤 > 期限切れのものしかなければ黒 > それ以外は青）。
   function createClusterIcon(cluster) {
+    var referenceDate = getReferenceDate();
+    var markers = cluster.getAllChildMarkers();
+
+    var hasEndingSoon = false;
+    var allPastDeadline = true;
+    markers.forEach(function (m) {
+      var place = m.placeData;
+      if (!place) return;
+      if (isEndingSoon(place, referenceDate)) hasEndingSoon = true;
+      if (!isPastDeadline(place)) allPastDeadline = false;
+    });
+
+    var colorClass;
+    if (hasEndingSoon) {
+      colorClass = 'cluster-red';
+    } else if (allPastDeadline) {
+      colorClass = 'cluster-black';
+    } else {
+      colorClass = 'cluster-blue';
+    }
+
     var count = cluster.getChildCount();
     var sizeClass = 'cluster-size-s';
     if (count >= 50) {
@@ -85,7 +108,7 @@
       sizeClass = 'cluster-size-m';
     }
     return L.divIcon({
-      html: '<div class="place-cluster-inner ' + sizeClass + '">' + count + '</div>',
+      html: '<div class="place-cluster-inner ' + sizeClass + ' ' + colorClass + '">' + count + '</div>',
       className: 'place-cluster',
       iconSize: [40, 40],
     });
@@ -186,6 +209,7 @@
     dateFilteredPlaces.forEach(function (p) {
       var colorClass = getPinColorClass(p, referenceDate);
       var marker = L.marker([p.lat, p.lng], { icon: createPlaceIcon(colorClass) }).addTo(markersLayer);
+      marker.placeData = p; // クラスターアイコンの色分け判定に使う（createClusterIcon参照）
       marker.bindPopup(buildPopupContent(p));
     });
 

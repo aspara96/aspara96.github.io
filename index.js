@@ -11,10 +11,14 @@
   var map = null;
   var markersLayer = null;
 
+  // 地図の初期表示（中心地: 東京）。初回表示時・場所検索の削除ボタンの両方で使うため定数化する。
+  var INITIAL_MAP_CENTER = [35.681236, 139.767125];
+  var INITIAL_MAP_ZOOM = 5;
+
   var els = {
     mapSearchQuery: document.getElementById('mapSearchQuery'),
     mapSearchBtn: document.getElementById('mapSearchBtn'),
-    mapSearchClearBtn: document.getElementById('mapSearchClearBtn'),
+    mapSearchDeleteBtn: document.getElementById('mapSearchDeleteBtn'),
     mapSearchResults: document.getElementById('mapSearchResults'),
     viewDate: document.getElementById('viewDate'),
     todayBtn: document.getElementById('todayBtn'),
@@ -30,7 +34,6 @@
     initMap();
     bindEvents();
     populateCategoryFilterOptions();
-    updateMapSearchClearVisibility();
     refreshMarkersForDateFilter(true); // 初回表示時のみ、全ピンが収まるように表示範囲を合わせる
     handleFocusParam();
   }
@@ -52,7 +55,7 @@
   }
 
   function initMap() {
-    map = L.map('map').setView([35.681236, 139.767125], 5); // 初期中心地: 東京
+    map = L.map('map').setView(INITIAL_MAP_CENTER, INITIAL_MAP_ZOOM); // 初期中心地: 東京
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -123,12 +126,12 @@
         onMapSearch();
       }
     });
-    els.mapSearchQuery.addEventListener('input', updateMapSearchClearVisibility);
 
-    els.mapSearchClearBtn.addEventListener('click', function () {
+    // 場所検索欄の内容をクリアし、地図の表示範囲も初期状態に戻す
+    els.mapSearchDeleteBtn.addEventListener('click', function () {
       els.mapSearchQuery.value = '';
       els.mapSearchResults.innerHTML = ''; // 検索結果も閉じる
-      updateMapSearchClearVisibility();
+      map.setView(INITIAL_MAP_CENTER, INITIAL_MAP_ZOOM);
       els.mapSearchQuery.focus();
     });
 
@@ -154,10 +157,6 @@
 
   // ---------- 地図上を移動するための検索（場所の登録は行わない） ----------
 
-  function updateMapSearchClearVisibility() {
-    els.mapSearchClearBtn.hidden = !els.mapSearchQuery.value;
-  }
-
   function onMapSearch() {
     var q = els.mapSearchQuery.value.trim();
     if (!q) return;
@@ -171,7 +170,6 @@
           var lng = parseFloat(r.lon);
           els.mapSearchResults.innerHTML = '';
           els.mapSearchQuery.value = r.display_name.split(',')[0];
-          updateMapSearchClearVisibility();
           map.setView([lat, lng], 15); // moveend 経由で下部リストも更新される
         });
       })

@@ -128,11 +128,11 @@
     });
 
     // 場所検索欄の内容をクリアし、地図の表示範囲も初期状態に戻す
+    // （リセット後にカーソルが検索欄に入ってしまわないよう、あえてフォーカスは当てない）
     els.mapSearchDeleteBtn.addEventListener('click', function () {
       els.mapSearchQuery.value = '';
       els.mapSearchResults.innerHTML = ''; // 検索結果も閉じる
       map.setView(INITIAL_MAP_CENTER, INITIAL_MAP_ZOOM);
-      els.mapSearchQuery.focus();
     });
 
     // 日付の変更では、現在の地図の表示範囲（パン・ズーム）を維持する

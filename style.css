@@ -217,7 +217,7 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   width: 100%;
 }
 
-.filter-row button:not(.input-clear-btn) {
+.filter-row button:not(.input-clear-btn):not(.delete-btn) {
   padding: 0 14px;
   border: none;
   background: var(--color-gold);
@@ -230,7 +230,8 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   min-height: 34px;
   flex-shrink: 0;
 }
-.filter-row button:not(.input-clear-btn):active { background: var(--color-gold-dark); }
+.filter-row button:not(.input-clear-btn):not(.delete-btn):active { background: var(--color-gold-dark); }
+.filter-row .delete-btn { flex-shrink: 0; }
 
 /* フィルターバーの直下に出る地名検索の候補一覧 */
 #mapSearchResults { margin: 6px 16px 0; }
@@ -306,7 +307,6 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 }
 .input-clear-btn:active { background: var(--color-text-muted); color: var(--color-surface); }
 
-#mapSearchQuery,
 #placeSearchQuery,
 #placeAddress {
   padding-right: 30px;

@@ -11,6 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -36,15 +37,13 @@
           <span class="filter-label">日付</span>
           <input type="date" id="viewDate" aria-label="表示基準日">
           <button id="todayBtn" type="button">今日</button>
-          <button id="clearDateBtn" type="button">すべて</button>
+          <button id="clearDateBtn" type="button" aria-label="リセット">&#8634;</button>
         </div>
         <div class="filter-row">
           <span class="filter-label">場所</span>
-          <div class="input-clear-wrap">
-            <input type="text" id="mapSearchQuery" placeholder="例: 東京タワー">
-            <button type="button" id="mapSearchClearBtn" class="input-clear-btn" aria-label="入力内容を消去" hidden>&times;</button>
-          </div>
+          <input type="text" id="mapSearchQuery" placeholder="例: 東京タワー">
           <button type="button" id="mapSearchBtn">検索</button>
+          <button type="button" id="mapSearchDeleteBtn" aria-label="リセット">&#8634;</button>
         </div>
         <div class="filter-row">
           <select id="categoryFilter">
@@ -75,6 +74,7 @@
   </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="common.js"></script>
 <script src="index.js"></script>
 </body>

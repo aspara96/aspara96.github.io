@@ -306,7 +306,6 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 }
 .input-clear-btn:active { background: var(--color-text-muted); color: var(--color-surface); }
 
-#mapSearchQuery,
 #placeSearchQuery,
 #placeAddress {
   padding-right: 30px;
@@ -607,6 +606,36 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   border-radius: 50%;
   box-shadow: 0 0 0 5px rgba(192, 138, 46, 0.28);
 }
+
+/* ---------- 地図ピンのクラスター（密集対策） ---------- */
+/* サイズは件数の桁数に応じて最低限だけ拡大する（幅・高さ・文字サイズは
+   index.js の createClusterIcon がインラインstyleで指定するため、ここでは
+   固定値を持たない）。色は内包する場所の期限状態から決まり、個々のピンと
+   同じ配色（赤=1ヶ月以内に終了を含む、黒=期限切れのみ、青=それ以外）を使う
+   （判定ロジックは index.js の createClusterIcon 参照）。
+   L.divIcon の className をこの独自クラスにしているため、Leafletの既定スタイル
+   （.leaflet-div-icon の白背景など）は当たらない。iconSize指定により、内側の円の
+   サイズに関わらずアンカー座標（マーカーの実際の位置）を中心に描画される。 */
+.place-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.place-cluster-inner {
+  border-radius: 50%;
+  color: #fff;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-gold);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+/* 色（期限状態による。個々のピンの --color-pin-* と揃えている） */
+.place-cluster-inner.cluster-red { background: var(--color-pin-red); }
+.place-cluster-inner.cluster-black { background: var(--color-pin-black); }
+.place-cluster-inner.cluster-blue { background: var(--color-pin-blue); }
 
 .leaflet-popup-content-wrapper {
   border-radius: var(--radius-md);

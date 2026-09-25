@@ -102,10 +102,19 @@
     var actions = document.createElement('div');
     actions.className = 'detail-actions';
 
+    // 住所未設定（場所が決まっていない行き先）は地図に出せないため、ボタン自体は
+    // 残したまま非活性の見た目にし、押しても何も起きないようにする。
+    var located = hasLocation(place);
     var mapLink = document.createElement('a');
-    mapLink.className = 'focus-btn';
-    mapLink.href = 'index.html?focus=' + encodeURIComponent(place.id);
+    mapLink.className = 'focus-btn' + (located ? '' : ' is-disabled');
     mapLink.textContent = '地図';
+    if (located) {
+      mapLink.href = 'index.html?focus=' + encodeURIComponent(place.id);
+    } else {
+      mapLink.setAttribute('aria-disabled', 'true');
+      mapLink.tabIndex = -1;
+      mapLink.addEventListener('click', function (e) { e.preventDefault(); });
+    }
     actions.appendChild(mapLink);
 
     var editLink = document.createElement('a');

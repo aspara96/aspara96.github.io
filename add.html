@@ -37,17 +37,17 @@
           <input type="text" id="placeName" required placeholder="例: 京都 清水寺">
         </label>
 
-        <label for="placeAddress">住所・地名
+        <label for="placeAddress">住所・地名（任意）
           <div class="search-row">
             <div class="input-clear-wrap">
-              <input type="text" id="placeAddress" required placeholder="例: 京都府京都市東山区清水1丁目294">
+              <input type="text" id="placeAddress" placeholder="例: 京都府京都市東山区清水1丁目294">
               <button type="button" id="addressClearBtn" class="input-clear-btn" aria-label="住所を消去" hidden>&times;</button>
             </div>
             <button type="button" id="searchBtn">検索</button>
           </div>
         </label>
         <ul id="searchResults" class="search-results"></ul>
-        <p class="hint">住所を入力すると自動的に地図にピンが立ちます。地名などで検索して候補から選ぶこともできます。</p>
+        <p class="hint">住所を入力すると自動的に地図にピンが立ちます。地名などで検索して候補から選ぶこともできます。まだ場所が決まっていない場合は、住所を空欄のまま登録できます（地図には表示されず、一覧画面でのみ管理されます）。</p>
 
         <label for="placeUrl">参考URL（任意）
           <input type="url" id="placeUrl" placeholder="https://...">
@@ -74,7 +74,7 @@
           <textarea id="placeMemo" rows="3" placeholder="行きたい理由など"></textarea>
         </label>
 
-        <button type="submit" id="saveBtn" disabled>登録</button>
+        <button type="submit" id="saveBtn">登録</button>
       </form>
     </main>
   </div>

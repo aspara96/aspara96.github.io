@@ -8,6 +8,9 @@
 // 住所欄を自動入力できるようにしています。
 // 住所からの座標検索には common.js の addressSearch（国土地理院→Nominatimの順で検索）を
 // 使用しており、検索結果の選択を経なくても、入力した住所だけで自動的にピンが立ちます。
+//
+// 住所は任意項目です。空欄のまま保存すると、座標を持たない「場所が決まっていない
+// 行き先」として登録されます（地図画面には表示されず、list.html でのみ管理されます）。
 
 (function () {
   'use strict';
@@ -63,7 +66,6 @@
       }
     }
 
-    updateSaveButtonState();
     updateAddressClearVisibility();
   }
 
@@ -104,7 +106,6 @@
     // （プログラムから .value を設定した場合はこのイベントは発火しない）
     els.address.addEventListener('input', function () {
       confirmedLocation = null;
-      updateSaveButtonState();
       updateAddressClearVisibility();
     });
 
@@ -119,7 +120,6 @@
         map.removeLayer(marker);
         marker = null;
       }
-      updateSaveButtonState();
       updateAddressClearVisibility();
       els.address.focus();
     });
@@ -158,10 +158,14 @@
     els.memo.value = place.memo || '';
     updateAddressClearVisibility();
 
-    // 既存の座標はそのまま確定済みとして扱う（住所欄を編集しない限り再検索しない）
-    confirmedLocation = { lat: place.lat, lng: place.lng };
-    placeMarkerAt(place.lat, place.lng);
-    map.setView([place.lat, place.lng], 15);
+    // 既存の座標はそのまま確定済みとして扱う（住所欄を編集しない限り再検索しない）。
+    // 住所未設定（場所が決まっていない行き先）の場合は座標がないため、
+    // 地図は初期表示のまま・ピンなしにしておく。
+    if (hasLocation(place)) {
+      confirmedLocation = { lat: place.lat, lng: place.lng };
+      placeMarkerAt(place.lat, place.lng);
+      map.setView([place.lat, place.lng], 15);
+    }
   }
 
   function getSaveLabel() {
@@ -180,10 +184,13 @@
     els.memo.value = sourcePlace.memo || '';
     updateAddressClearVisibility();
 
-    // 複製元と同じ座標をそのまま確定済みとして扱う（住所欄を編集しない限り再検索しない）
-    confirmedLocation = { lat: sourcePlace.lat, lng: sourcePlace.lng };
-    placeMarkerAt(sourcePlace.lat, sourcePlace.lng);
-    map.setView([sourcePlace.lat, sourcePlace.lng], 15);
+    // 複製元と同じ座標をそのまま確定済みとして扱う（住所欄を編集しない限り再検索しない）。
+    // 複製元が住所未設定の場合は座標がないため、地図は初期表示のまま・ピンなしにしておく。
+    if (hasLocation(sourcePlace)) {
+      confirmedLocation = { lat: sourcePlace.lat, lng: sourcePlace.lng };
+      placeMarkerAt(sourcePlace.lat, sourcePlace.lng);
+      map.setView([sourcePlace.lat, sourcePlace.lng], 15);
+    }
 
     // 複製元の詳細画面に「戻る」で戻れるようにする（履歴を余計に積まない理由は enterEditMode 参照）
     var backUrl = 'detail.html?id=' + encodeURIComponent(sourcePlace.id);
@@ -192,10 +199,6 @@
       e.preventDefault();
       window.location.replace(backUrl);
     });
-  }
-
-  function updateSaveButtonState() {
-    els.saveBtn.disabled = !els.address.value.trim();
   }
 
   function placeMarkerAt(lat, lng) {
@@ -230,7 +233,6 @@
         confirmedLocation = loc;
         placeMarkerAt(loc.lat, loc.lng);
         map.setView([loc.lat, loc.lng], 15);
-        updateSaveButtonState();
       })
       .catch(function () {
         // ここでは失敗を通知しない（保存時に改めて案内する）
@@ -257,7 +259,6 @@
           }
         }
         confirmedLocation = { lat: lat, lng: lng };
-        updateSaveButtonState();
       })
       .catch(function () {
         alert('住所の自動取得に失敗しました。お手数ですが住所欄をご確認・ご入力ください。');
@@ -281,7 +282,6 @@
           els.address.value = r.display_name; // .value での設定なので input イベントは発火しない
           updateAddressClearVisibility();
           confirmedLocation = { lat: lat, lng: lng };
-          updateSaveButtonState();
 
           placeMarkerAt(lat, lng);
           map.setView([lat, lng], 15);
@@ -306,10 +306,6 @@
     if (!name) return;
 
     var address = els.address.value.trim();
-    if (!address) {
-      alert('住所を入力するか、検索結果の選択、地図タップのいずれかで場所を指定してください');
-      return;
-    }
 
     var startDate = els.startDate.value;
     var endDate = els.endDate.value;
@@ -324,6 +320,13 @@
     }
 
     var categoryId = els.category.value;
+
+    if (!address) {
+      // 住所は任意項目。空欄のまま保存すると、座標を持たない「場所が決まっていない
+      // 行き先」として登録される（地図画面には表示されず、list.html でのみ管理される）。
+      finishSave(name, '', null, null, startDate, endDate, url, categoryId);
+      return;
+    }
 
     if (confirmedLocation) {
       // 検索選択・地図タップ・住所の自動解決済みで、住所欄も編集されていない → その座標をそのまま使う
@@ -356,8 +359,8 @@
         id: editingId,
         name: name,
         address: address,
-        lat: lat,
-        lng: lng,
+        lat: lat, // 住所未設定の場合は null
+        lng: lng, // 住所未設定の場合は null
         startDate: startDate, // 空文字の場合あり
         endDate: endDate,     // 空文字の場合あり
         memo: memo,
@@ -382,8 +385,8 @@
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
       name: name,
       address: address,
-      lat: lat,
-      lng: lng,
+      lat: lat, // 住所未設定の場合は null
+      lng: lng, // 住所未設定の場合は null
       startDate: startDate, // 空文字の場合あり
       endDate: endDate,     // 空文字の場合あり
       memo: memo,

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1d2b3a">
+<title>使い方 | いつマップ</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+
+    <header class="app-header add-header">
+      <a href="index.html" class="back-btn" aria-label="地図に戻る">&#8592;</a>
+      <h1>使い方</h1>
+      <button type="button" id="navMenuBtn" class="nav-menu-btn" aria-label="メニュー" aria-expanded="false" aria-controls="navMenu">&#9776;</button>
+      <nav id="navMenu" class="nav-menu" hidden>
+        <a href="index.html">ホーム</a>
+        <a href="list.html">登録済み行き先一覧</a>
+        <a href="add.html">行き先登録</a>
+        <a href="categories.html">カテゴリー設定</a>
+        <a href="help.html">使い方</a>
+      </nav>
+    </header>
+
+    <main class="main-content help-content">
+
+      <section class="help-card">
+        <h2>いつマップとは</h2>
+        <p>「行ってみたい場所」を地図に保存し、行きたい時期（いつ）やカテゴリーと一緒に管理するアプリです。たとえば「桜の見頃に行きたい公園」「セール期間中に行きたい店」のように、時期やジャンルで絞り込んで見られます。</p>
+        <p class="help-note">登録したデータはお使いのiPhoneのブラウザ内にだけ保存され、サーバーには送信されません。そのため、機種変更や万一のデータ消去に備えて、定期的に<a href="#backup">バックアップ</a>を取っておくことをおすすめします。</p>
+      </section>
+
+      <section class="help-card">
+        <h2>行き先を登録する</h2>
+        <ol>
+          <li>画面右下の「＋」、またはメニューの「行き先登録」を開きます。</li>
+          <li>場所を指定します。次のどれでも構いません。
+            <ul>
+              <li>地図を直接タップする（住所が自動で入力されます）</li>
+              <li>「住所・地名」欄に入力する（入力後に欄から離れると、自動で地図にピンが立ちます）</li>
+              <li>「検索」を押して、候補から選ぶ</li>
+            </ul>
+          </li>
+          <li>「登録名」を入力します。</li>
+          <li>必要に応じて、参考URL・カテゴリー・開始日・終了日・メモを入力します。</li>
+          <li>「登録」を押して完了です。</li>
+        </ol>
+        <p>「登録名」と「住所」は必須で、それ以外は任意です。住所から場所が見つからないときは、地図を直接タップして指定してください。</p>
+
+        <h3 class="help-sub">開始日・終了日の考え方</h3>
+        <ul>
+          <li>両方入力：その期間だけ表示対象になります。</li>
+          <li>開始日だけ：開始日以降ずっと表示対象になります。</li>
+          <li>終了日だけ：終了日までずっと表示対象になります。</li>
+          <li>どちらも未入力：「期限なし」として、いつでも表示対象になります。</li>
+        </ul>
+      </section>
+
+      <section class="help-card">
+        <h2>地図で探す（ホーム画面）</h2>
+        <h3 class="help-sub">絞り込み</h3>
+        <ul>
+          <li><strong>日付</strong>：選んだ日に表示対象となる行き先だけを表示します。「今日」で本日の日付になり、「↺」で日付の指定を解除してすべて表示します。</li>
+          <li><strong>場所</strong>：地名を入力して「検索」を押すと、地図がその場所へ移動します。移動のための検索なので、場所が登録されることはありません。「↺」で入力と地図の位置を初期状態に戻します。</li>
+          <li><strong>カテゴリー</strong>：選んだカテゴリーの行き先だけを表示します。「未設定」を選ぶと、カテゴリーを付けていない行き先だけが表示されます。</li>
+        </ul>
+        <p>日付とカテゴリーは、両方の条件を満たす行き先が表示されます。</p>
+
+        <h3 class="help-sub">ピンの色</h3>
+        <ul>
+          <li><span class="legend-dot legend-red" aria-hidden="true"></span>赤：終了日が1ヶ月以内に迫っている</li>
+          <li><span class="legend-dot legend-black" aria-hidden="true"></span>黒：終了日を過ぎている（期限切れ）</li>
+          <li><span class="legend-dot legend-blue" aria-hidden="true"></span>青：上記以外</li>
+        </ul>
+        <p>近くにあるピンは、数字入りの丸にまとまって表示されます。タップするか地図を拡大すると、個別のピンに展開されます。</p>
+
+        <h3 class="help-sub">下のリスト</h3>
+        <p>「表示中の行き先」には、地図に映っている範囲の行き先だけが、終了日の近い順に並びます。行をタップすると詳細画面が開き、「地図」ボタンで地図上のその場所を表示できます。</p>
+      </section>
+
+      <section class="help-card">
+        <h2>一覧・詳細画面</h2>
+        <p>メニューの「登録済み行き先一覧」では、登録した行き先がすべて表示されます。名前・住所・メモでの検索や、カテゴリーでの絞り込みができます。</p>
+        <p>詳細画面では、次の操作ができます。</p>
+        <ul>
+          <li><strong>地図</strong>：ホーム画面でその場所を表示します。</li>
+          <li><strong>編集</strong>：内容を修正します。</li>
+          <li><strong>複製</strong>：内容をコピーして、新しい行き先として登録します（元の行き先は変わりません）。</li>
+          <li><strong>削除</strong>：行き先を削除します。</li>
+        </ul>
+        <p>住所をタップすると、Googleマップでその場所を開けます。</p>
+        <p class="help-note">一覧画面の下部にある「保存データを全て削除」は、登録した行き先をすべて削除します（カテゴリーは残ります）。元に戻せないので、実行前にバックアップを取ってください。</p>
+      </section>
+
+      <section class="help-card">
+        <h2>カテゴリーを使う</h2>
+        <ol>
+          <li>メニューの「カテゴリー設定」を開きます。</li>
+          <li>アイコン（絵文字などを1つ）と名前を入力して「追加」を押します。</li>
+          <li>行き先の登録・編集画面の「カテゴリー」欄で選ぶと、行き先に付けられます。</li>
+        </ol>
+        <p>「▲」「▼」で並び順を変えられ、その順番は他の画面の選択肢にも反映されます。カテゴリーを削除しても行き先は消えず、その行き先が「未設定」に戻ります。</p>
+      </section>
+
+      <section class="help-card" id="backup">
+        <h2>バックアップを取る・戻す</h2>
+        <p>行き先とカテゴリーをまとめて、1つのファイル（JSON形式）として書き出せます。書き出したファイルは、iPhoneの「ファイル」アプリに保存しておきます。</p>
+
+        <h3 class="help-sub">ファイルアプリに保存する</h3>
+        <ol>
+          <li>メニューの「登録済み行き先一覧」を開き、一番下の「バックアップを書き出す」を押します。</li>
+          <li>共有メニューが開くので、「“ファイル”に保存」を選びます。</li>
+          <li>保存先のフォルダ（「iCloud Drive」や「このiPhone内」など）を選び、右上の「保存」を押します。</li>
+        </ol>
+        <p>ファイル名は「itsumap-backup-日付.json」になります。保存先に iCloud Drive を選んでおくと、機種変更のときにも取り出しやすくなります。</p>
+
+        <h3 class="help-sub">ファイルアプリから読み込む</h3>
+        <ol>
+          <li>「登録済み行き先一覧」の一番下にある「バックアップを読み込む」を押します。</li>
+          <li>ファイルを選ぶ画面が開くので、保存しておいたバックアップファイル（.json）を選びます。見つからないときは、画面下の「ブラウズ」から保存先のフォルダを開いてください。</li>
+          <li>読み込みが終わると、追加された件数が表示されます。</li>
+        </ol>
+        <p>すでに登録されている行き先やカテゴリーは重複して追加されず、スキップされます。そのため、同じバックアップを何度読み込んでも増えません。また、誤って削除した行き先を、過去のバックアップから復元することもできます。</p>
+
+        <h3 class="help-sub">バックアップを取るタイミング</h3>
+        <ul>
+          <li>行き先をまとめて登録したあと</li>
+          <li>機種変更の前</li>
+          <li>「保存データを全て削除」を実行する前</li>
+        </ul>
+        <p class="help-note">iPhoneのSafariでは、しばらくサイトを開かないでいると、ブラウザに保存されたデータが自動で消去されることがあります。長く開かない期間がありそうなときは、事前にバックアップを取っておくと安心です。</p>
+
+        <h3 class="help-sub">他の人と共有する</h3>
+        <p>書き出したファイルを、AirDropやメッセージなどで相手に送れます。受け取った人は、ファイルアプリに保存してから、同じ手順で読み込むと、行き先とカテゴリーが追加されます。</p>
+      </section>
+
+      <section class="help-card">
+        <h2>困ったときは</h2>
+        <ul>
+          <li><strong>行き先が地図に出てこない</strong>：日付やカテゴリーで絞り込まれている可能性があります。日付の「↺」を押し、カテゴリーを「すべてのカテゴリー」に戻してみてください。</li>
+          <li><strong>住所から場所が見つからない</strong>：住所の書き方を変えるか、地名で「検索」してみてください。それでも見つからないときは、地図を直接タップして指定できます。</li>
+          <li><strong>データが消えてしまった</strong>：バックアップファイルがあれば、「バックアップを読み込む」から復元できます。</li>
+        </ul>
+      </section>
+
+    </main>
+  </div>
+
+<script src="common.js"></script>
+</body>
+</html>

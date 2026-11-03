@@ -76,6 +76,33 @@ function matchesCategoryFilter(categoryFilterValue, placeCategoryId) {
   return placeCategoryId === categoryFilterValue;
 }
 
+// ---------- 場所（住所）の設定有無 ----------
+// 住所は任意項目のため、行き先は「住所が設定済み（地図表示・Googleマップ連携が可能）」
+// 「住所が未設定（場所が決まっていない/決めにくいやりたいこと）」のいずれかの状態を取る。
+// 未設定の行き先は lat / lng が null（またはインポート等で未定義）になる。
+
+function hasLocation(place) {
+  return typeof place.lat === 'number' && typeof place.lng === 'number';
+}
+
+// ---------- 住所の設定有無での絞り込み（list.html） ----------
+// list.html の住所絞り込みセレクトで使う値の意味づけ。カテゴリー絞り込み
+// （UNSET_CATEGORY_FILTER_VALUE / matchesCategoryFilter）と同じ考え方。
+//   ''（空文字）                  → すべての行き先を対象にする（絞り込みなし）
+//   LOCATION_FILTER_SET_VALUE    → 住所が設定済みの行き先のみを対象にする
+//   LOCATION_FILTER_UNSET_VALUE  → 住所が未設定の行き先のみを対象にする
+var LOCATION_FILTER_SET_VALUE = 'set';
+var LOCATION_FILTER_UNSET_VALUE = 'unset';
+
+// locationFilterValue: 住所絞り込みセレクトの現在値
+// placeHasLocation: hasLocation(place) の結果
+function matchesLocationFilter(locationFilterValue, placeHasLocation) {
+  if (!locationFilterValue) return true; // すべて
+  if (locationFilterValue === LOCATION_FILTER_UNSET_VALUE) return !placeHasLocation;
+  if (locationFilterValue === LOCATION_FILTER_SET_VALUE) return placeHasLocation;
+  return true;
+}
+
 // ---------- 日付 ----------
 
 function formatDate(d) {

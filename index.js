@@ -5,7 +5,9 @@
 (function () {
   'use strict';
 
-  var places = loadPlaces();
+  // 住所（座標）未設定の行き先は地図画面には出さず、list.html のみで管理する。
+  // そのため、この画面が扱う places は「住所が設定済みの行き先」のみに絞り込む。
+  var places = loadPlaces().filter(hasLocation);
   var categories = loadCategories();
   var dateFilteredPlaces = []; // 期間の条件に一致する場所（地図上のピン全体）
   var map = null;
@@ -240,8 +242,11 @@
   }
 
   function deletePlace(id) {
-    places = places.filter(function (p) { return p.id !== id; });
-    savePlaces(places);
+    // places はこの画面用に「住所設定済み」のみへ絞り込んだ配列なので、そのまま保存すると
+    // 住所未設定の行き先まで消えてしまう。保存は必ずフルデータに対して行う。
+    var allPlaces = loadPlaces().filter(function (p) { return p.id !== id; });
+    savePlaces(allPlaces);
+    places = allPlaces.filter(hasLocation);
     refreshMarkersForDateFilter(true);
   }
 

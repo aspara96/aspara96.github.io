@@ -413,12 +413,6 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 .delete-btn { background: #fbeae6; color: var(--color-rust); }
 .delete-btn:active { background: #f6d8d1; }
 
-/* 住所未設定の行き先の「地図」ボタン: 消さずに残しつつ、押しても機能しないことが
-   見た目でわかるようにする（#saveBtn:disabled と同じ考え方: 半透明化＋カーソル変更）。
-   タップ時の背景変化（.focus-btn:active）も打ち消し、押下フィードバックを出さない。 */
-.focus-btn.is-disabled { opacity: 0.4; cursor: not-allowed; }
-.focus-btn.is-disabled:active { background: var(--color-paper); }
-
 .empty-state {
   color: var(--color-text-muted);
   font-size: 13px;
@@ -857,6 +851,51 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* ---------- 使い方ページ（help.html） ---------- */
+
+.help-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.help-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+}
+.help-card h2 { font-size: 16px; color: var(--color-ink); margin-bottom: 10px; }
+.help-card p,
+.help-card li { font-size: 14px; line-height: 1.75; color: var(--color-text); }
+.help-card p { margin: 0 0 8px; }
+.help-card p:last-child { margin-bottom: 0; }
+.help-card ol,
+.help-card ul { margin: 0 0 8px; padding-left: 20px; }
+.help-card ol:last-child,
+.help-card ul:last-child { margin-bottom: 0; }
+.help-card li + li { margin-top: 4px; }
+
+.help-sub {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-teal);
+  margin: 14px 0 6px;
+}
+.help-sub:first-of-type { margin-top: 0; }
+
+.help-note {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--color-gold);
+  background: rgba(192, 138, 46, 0.08);
+  border-radius: 0 8px 8px 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--color-text);
 }
 
 /* ---------- アクセシビリティ ---------- */

@@ -16,6 +16,7 @@
     searchQuery: document.getElementById('placeSearchQuery'),
     searchClearBtn: document.getElementById('placeSearchClearBtn'),
     categoryFilter: document.getElementById('categoryFilter'),
+    locationFilter: document.getElementById('locationFilter'),
     placeList: document.getElementById('placeList'),
     placeCount: document.getElementById('placeCount'),
     exportBtn: document.getElementById('exportBtn'),
@@ -69,6 +70,7 @@
     });
 
     els.categoryFilter.addEventListener('change', renderList);
+    els.locationFilter.addEventListener('change', renderList);
 
     els.exportBtn.addEventListener('click', onExport);
     els.importBtn.addEventListener('click', function () {
@@ -253,10 +255,13 @@
     return { added: added, skipped: skipped, knownIds: knownIds };
   }
 
+  // lat/lng は住所未設定の行き先では欠落しうる（住所は任意項目のため）ため必須にしない。
+  // 値がある場合のみ数値であることを確認する（誤った型のデータの取り込みは防ぐ）。
   function isValidImportedPlace(p) {
     return !!(p && typeof p === 'object' &&
       typeof p.name === 'string' && p.name.trim() &&
-      typeof p.lat === 'number' && typeof p.lng === 'number');
+      (p.lat == null || typeof p.lat === 'number') &&
+      (p.lng == null || typeof p.lng === 'number'));
   }
 
   // 既に同じIDの行き先が登録済みの場合はスキップし、それ以外は追加する
@@ -292,8 +297,8 @@
         id: id,
         name: item.name,
         address: typeof item.address === 'string' ? item.address : '',
-        lat: item.lat,
-        lng: item.lng,
+        lat: typeof item.lat === 'number' ? item.lat : null,
+        lng: typeof item.lng === 'number' ? item.lng : null,
         startDate: typeof item.startDate === 'string' ? item.startDate : '',
         endDate: typeof item.endDate === 'string' ? item.endDate : '',
         memo: typeof item.memo === 'string' ? item.memo : '',
@@ -320,12 +325,16 @@
   // 名前・住所・メモを対象に大文字小文字を区別せず部分一致で絞り込む。
   // カテゴリーが選択されている場合は、そのカテゴリーの行き先のみに絞り込む
   // （「未設定」が選択されている場合は categoryId が空の行き先のみに絞り込む）。
+  // 住所フィルターが選択されている場合は、住所の設定有無でさらに絞り込む
+  // （「設定済み」＝地図表示可能な行き先のみ／「未設定」＝場所が決まっていない行き先のみ）。
   function getFilteredPlaces() {
     var query = els.searchQuery.value.trim().toLowerCase();
     var categoryId = els.categoryFilter.value;
+    var locationFilterValue = els.locationFilter.value;
 
     return places.filter(function (p) {
       if (!matchesCategoryFilter(categoryId, p.categoryId)) return false;
+      if (!matchesLocationFilter(locationFilterValue, hasLocation(p))) return false;
       if (!query) return true;
       var haystack = [p.name, p.address, p.memo].filter(Boolean).join(' ').toLowerCase();
       return haystack.indexOf(query) !== -1;
@@ -406,12 +415,23 @@
       var actions = document.createElement('div');
       actions.className = 'place-actions';
 
-      // 地図画面に遷移し、この場所にフォーカスする
+      // 地図画面に遷移し、この場所にフォーカスする。
+      // 住所未設定（場所が決まっていない行き先）は地図に出せないため、ボタン自体は
+      // 残したまま非活性の見た目にし、押しても何も起きないようにする。
+      var located = hasLocation(p);
       var viewBtn = document.createElement('a');
-      viewBtn.className = 'focus-btn';
-      viewBtn.href = 'index.html?focus=' + encodeURIComponent(p.id);
+      viewBtn.className = 'focus-btn' + (located ? '' : ' is-disabled');
       viewBtn.textContent = '地図';
-      viewBtn.addEventListener('click', function (e) { e.stopPropagation(); });
+      if (located) {
+        viewBtn.href = 'index.html?focus=' + encodeURIComponent(p.id);
+      } else {
+        viewBtn.setAttribute('aria-disabled', 'true');
+        viewBtn.tabIndex = -1;
+      }
+      viewBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (!located) e.preventDefault();
+      });
       actions.appendChild(viewBtn);
 
       var delBtn = document.createElement('button');

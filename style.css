@@ -413,6 +413,12 @@ button, input, textarea, select { font-family: inherit; font-size: 16px; }
 .delete-btn { background: #fbeae6; color: var(--color-rust); }
 .delete-btn:active { background: #f6d8d1; }
 
+/* 住所未設定の行き先の「地図」ボタン: 消さずに残しつつ、押しても機能しないことが
+   見た目でわかるようにする（#saveBtn:disabled と同じ考え方: 半透明化＋カーソル変更）。
+   タップ時の背景変化（.focus-btn:active）も打ち消し、押下フィードバックを出さない。 */
+.focus-btn.is-disabled { opacity: 0.4; cursor: not-allowed; }
+.focus-btn.is-disabled:active { background: var(--color-paper); }
+
 .empty-state {
   color: var(--color-text-muted);
   font-size: 13px;
